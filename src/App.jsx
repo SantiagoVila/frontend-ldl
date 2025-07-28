@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import api from './api/api';
 
 // Importaciones de Contexto y Componentes de Lógica
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -74,7 +75,7 @@ function Navigation() {
 
     if (!notificacion.leida) {
         try {
-            await axios.put(`http://localhost:3000/api/notificaciones/${notificacion.id}/leida`, {}, {
+            await api.put(`/api/notificaciones/${notificacion.id}/leida`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotificaciones(prev => prev.map(n => 
@@ -180,7 +181,7 @@ function Navigation() {
                 <div className="relative">
                   <button onClick={() => setMostrarMenuUsuario(!mostrarMenuUsuario)} className="flex text-sm rounded-full focus:outline-none ring-2 ring-offset-2 ring-offset-gray-800 ring-cyan-500">
                     {/* ✅ LÍNEA CORREGIDA */}
-                    <img className="h-8 w-8 rounded-full object-cover" src={usuario.avatar_url ? `http://localhost:3000${usuario.avatar_url}?t=${new Date().getTime()}` : 'https://via.placeholder.com/40'} alt="User Avatar" />
+                    <img className="h-8 w-8 rounded-full object-cover" src={usuario.avatar_url ? `${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}` : 'https://via.placeholder.com/40'} alt="User Avatar" />
                   </button>
                   {mostrarMenuUsuario && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuUsuario(false)}>
