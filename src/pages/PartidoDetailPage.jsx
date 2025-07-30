@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import BotonVolver from '../components/ui/BotonVolver'; // Importamos el botón
 
 // --- Componente de Estadísticas de Equipo Reutilizable ---
@@ -56,7 +56,7 @@ function PartidoDetailPage() {
     useEffect(() => {
         const fetchPartido = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/partidos/publico/${id}`);
+                const response = await api.get(`/partidos/publico/${id}`);
                 setPartido(response.data);
             } catch (err) {
                 setError('No se pudo encontrar el partido solicitado.');

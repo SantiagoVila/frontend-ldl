@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 
 // --- Componente de Tarjeta de Estadística Reutilizable ---
@@ -25,8 +25,8 @@ function JugadorDashboard() {
         const fetchJugadorData = async () => {
             try {
                 const [perfilRes, calendarioRes] = await Promise.all([
-                    axios.get(`http://localhost:3000/api/jugadores/publico/${usuario.id}`),
-axios.get('http://localhost:3000/api/jugadores/mi-calendario', {
+                    api.get(`/jugadores/publico/${usuario.id}`),
+                    api.get('/jugadores/mi-calendario', {
                         headers: { Authorization: `Bearer ${token}` }
                     })
                 ]);

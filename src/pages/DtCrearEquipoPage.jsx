@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
@@ -16,7 +16,7 @@ function DtCrearEquipoPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('http://localhost:3000/api/equipos/crear',
+            await api.post('/equipos/crear',
                 { nombre, escudo, formacion },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

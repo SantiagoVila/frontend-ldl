@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 
 // --- Componente de Tarjeta de Estadística Reutilizable ---
@@ -42,7 +42,7 @@ function AdminDashboard() {
         const fetchStats = async () => {
             if (!token) return;
             try {
-                const response = await axios.get('http://localhost:3000/api/admin/dashboard-stats', {
+                const response = await api.get('/admin/dashboard-stats', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStats(response.data);

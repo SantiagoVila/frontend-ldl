@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 
 // --- Componente Modal para Noticias ---
 const NoticiaModal = ({ noticia, onClose }) => {
@@ -66,10 +66,10 @@ function HomePage() {
         const fetchHomePageData = async () => {
             try {
                 const [ligasRes, resultadosRes, noticiasRes, fichajesRes] = await Promise.all([
-                    axios.get('http://localhost:3000/api/ligas/publico'),
-axios.get('http://localhost:3000/api/partidos/publico/recientes'),
-axios.get('http://localhost:3000/api/noticias?limite=5'),
-axios.get('http://localhost:3000/api/stats/ultimos-fichajes?limite=10')
+                    api.get('/ligas/publico'),
+                    api.get('/partidos/publico/recientes'),
+                    api.get('/noticias?limite=5'),
+                    api.get('/stats/ultimos-fichajes?limite=10')
                 ]);
                 setLigas(ligasRes.data);
                 setUltimosResultados(resultadosRes.data);

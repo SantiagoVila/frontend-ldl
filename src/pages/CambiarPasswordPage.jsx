@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
@@ -24,7 +24,7 @@ function CambiarPasswordPage() {
         }
         setLoading(true);
         try {
-            const response = await axios.put('http://localhost:3000/api/usuarios/cambiar-password', {
+            const response = await api.put('/usuarios/cambiar-password', {
                 passwordActual: formData.passwordActual,
                 passwordNuevo: formData.passwordNuevo
             }, {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
@@ -13,7 +13,7 @@ function ForgotPasswordPage() {
         setLoading(true);
         setMessage('');
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/forgot-password', { email });
+            const response = await api.post('/auth/forgot-password', { email });
             setMessage(response.data.message);
             toast.success("Solicitud enviada con éxito.");
         } catch (err) {

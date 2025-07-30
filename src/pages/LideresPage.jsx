@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 
 // --- Componente de Tabla de Líderes Reutilizable ---
 const LideresTable = ({ titulo, jugadores }) => (
@@ -46,7 +46,7 @@ function LideresPage() {
     useEffect(() => {
         const fetchLideres = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/stats/lideres');
+                const response = await api.get('/stats/lideres');
                 setLideres(response.data);
             } catch (err) {
                 setError('No se pudieron cargar las estadísticas de líderes.');

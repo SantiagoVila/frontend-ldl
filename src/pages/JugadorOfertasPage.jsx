@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
@@ -19,7 +19,7 @@ function JugadorOfertasPage() {
         setLoading(true);
         setError(''); // Limpiar errores previos
         try {
-            const response = await axios.get('http://localhost:3000/api/transferencias/mis-ofertas', {
+            const response = await api.get('/transferencias/mis-ofertas', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setOfertas(response.data);
@@ -39,7 +39,7 @@ function JugadorOfertasPage() {
 
     const handleResponder = async (ofertaId, respuesta) => {
         try {
-            const response = await axios.post(`http://localhost:3000/api/transferencias/responder`,
+            const response = await api.post(`/transferencias/responder`,
                 {
                     transferencia_id: ofertaId,
                     respuesta: respuesta

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { toast } from 'react-toastify';
 
 function ResetPasswordPage() {
@@ -18,7 +18,7 @@ function ResetPasswordPage() {
         }
         setLoading(true);
         try {
-            const response = await axios.post(`http://localhost:3000/api/auth/reset-password/${token}`, { password });
+            const response = await api.post(`/auth/reset-password/${token}`, { password });
             toast.success(response.data.message);
             navigate('/login');
         } catch (err) {

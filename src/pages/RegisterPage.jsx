@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { toast } from 'react-toastify';
 
 function RegisterPage() {
@@ -27,7 +27,7 @@ function RegisterPage() {
         setSuccessMessage('');
 
         try {
-            const response = await axios.post('http://localhost:3000/api/usuarios/register', formData);
+            const response = await api.post('/usuarios/register', formData);
             setSuccessMessage(response.data.message);
         } catch (err) {
             if (err.response?.data?.errors) {

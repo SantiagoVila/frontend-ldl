@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import BotonVolver from '../components/ui/BotonVolver';
 
@@ -13,7 +13,7 @@ function AdminLogPage() {
         const fetchLogs = async () => {
             if (!token) return;
             try {
-                const response = await axios.get('http://localhost:3000/api/logs', {
+                const response = await api.get('/logs', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setLogs(response.data);

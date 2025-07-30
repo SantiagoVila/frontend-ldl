@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 
 function PublicLigaPage() {
     const [liga, setLiga] = useState(null);
@@ -11,7 +11,7 @@ function PublicLigaPage() {
     useEffect(() => {
         const fetchLiga = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/ligas/publico/${id}/detalles`);
+                const response = await api.get(`/ligas/publico/${id}/detalles`);
                 setLiga(response.data);
             } catch (err) {
                 setError('No se pudo encontrar la liga solicitada.');

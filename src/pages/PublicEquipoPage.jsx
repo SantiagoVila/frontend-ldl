@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import BotonVolver from '../components/ui/BotonVolver';
 
 function PublicEquipoPage() {
@@ -13,7 +13,7 @@ function PublicEquipoPage() {
     useEffect(() => {
         const fetchEquipo = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/equipos/publico/${id}/perfil`);
+                const response = await api.get(`/equipos/publico/${id}/perfil`);
                 setEquipo(response.data);
             } catch (err) {
                 setError('No se pudo encontrar el equipo solicitado.');

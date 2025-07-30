@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
 function DtPartidosPage() {
@@ -13,7 +13,7 @@ function DtPartidosPage() {
         const fetchPartidos = async () => {
             if (!token) return;
             try {
-                const response = await axios.get('http://localhost:3000/api/partidos/dt/mis-partidos', {
+                const response = await api.get('/partidos/dt/mis-partidos', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPartidos(response.data);

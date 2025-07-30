@@ -16,7 +16,7 @@ function AdminUsuariosPage() {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:3000/api/usuarios?page=${page}&limit=10`, {
+            const response = await api.get(`/usuarios?page=${page}&limit=10`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             

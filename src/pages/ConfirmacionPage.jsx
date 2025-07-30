@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 
 function ConfirmacionPage() {
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ function ConfirmacionPage() {
             }
 
             try {
-                const response = await axios.get(`http://localhost:3000/api/auth/confirmar/${token}`);
+                const response = await api.get(`/auth/confirmar/${token}`);
                 setMessage(response.data.message);
             } catch (err) {
                 setError(err.response?.data?.error || 'Ocurrió un error al confirmar la cuenta.');
