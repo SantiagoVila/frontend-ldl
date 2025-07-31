@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import BotonVolver from '../components/ui/BotonVolver';
 
 function EditarPerfilPage() {
     const { usuario, token, refreshUserData } = useAuth();
@@ -13,7 +14,8 @@ function EditarPerfilPage() {
         numero_remera: ''
     });
     const [selectedFile, setSelectedFile] = useState(null);
-    const [preview, setPreview] = useState(null);
+    // Estado para la previsualización de la *nueva* imagen seleccionada
+    const [newAvatarPreview, setNewAvatarPreview] = useState(null);
 
     useEffect(() => {
         if (usuario) {
@@ -22,9 +24,6 @@ function EditarPerfilPage() {
                 posicion: usuario.posicion || 'Delantero',
                 numero_remera: usuario.numero_remera || ''
             });
-            if (usuario.avatar_url) {
-                setPreview(`${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}`);
-            }
         }
     }, [usuario]);
 
@@ -36,7 +35,8 @@ function EditarPerfilPage() {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
-            setPreview(URL.createObjectURL(file));
+            // Creamos una URL temporal para la previsualización
+            setNewAvatarPreview(URL.createObjectURL(file));
         }
     };
 
@@ -71,6 +71,7 @@ function EditarPerfilPage() {
                 headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
             });
             toast.success("Avatar actualizado con éxito.");
+            setNewAvatarPreview(null); // Limpiamos la previsualización para que muestre la nueva imagen del servidor
             await refreshUserData();
         } catch (err) {
             toast.error(err.response?.data?.error || 'Error al subir la imagen.');
@@ -78,21 +79,28 @@ function EditarPerfilPage() {
             setLoading(false);
         }
     };
+    
+    // ✅ LÓGICA MEJORADA PARA MOSTRAR EL AVATAR
+    // Construimos la URL del avatar existente del usuario
+    const existingAvatarUrl = usuario?.avatar_url 
+        ? `${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}`
+        : '/user-avatar-placeholder.png'; // Usamos el placeholder local
 
-    // Clases de estilo reutilizables para el nuevo tema
     const inputClass = "mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm";
     const labelClass = "block text-sm font-medium text-gray-300";
     const buttonClass = "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:bg-cyan-800";
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <BotonVolver />
             <h2 className="text-3xl font-bold text-white text-center" style={{fontFamily: 'var(--font-heading)'}}>Editar Perfil</h2>
             
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                 <h3 className="text-lg font-medium text-cyan-400">Avatar</h3>
                 <div className="mt-4 flex items-center space-x-8">
                     <img 
-                        src={preview || 'https://via.placeholder.com/150'} 
+                        // ✅ LÓGICA MEJORADA: Damos prioridad a la nueva previsualización, si no existe, muestra el avatar actual
+                        src={newAvatarPreview || existingAvatarUrl} 
                         alt="Avatar Preview" 
                         className="h-24 w-24 rounded-full object-cover bg-gray-700 p-1 border-2 border-gray-600"
                     />
@@ -108,7 +116,7 @@ function EditarPerfilPage() {
                                 onChange={handleFileChange}
                                 className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-cyan-400 hover:file:bg-gray-600"
                             />
-                            <button type="submit" disabled={loading} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800">
+                            <button type="submit" disabled={loading || !selectedFile} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed">
                                 {loading ? 'Subiendo...' : 'Subir'}
                             </button>
                         </div>
