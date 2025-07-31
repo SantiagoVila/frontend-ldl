@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify'; // Importamos toast para las notificaciones
 
 // --- Componente de Tarjeta de Estadística Reutilizable ---
 const StatCard = ({ label, value }) => (
@@ -45,6 +46,23 @@ function JugadorDashboard() {
         fetchJugadorData();
     }, [usuario, token]);
 
+    // ✅ FUNCIÓN PARA MANEJAR LA SOLICITUD DE ROL
+    const handleSolicitarRolDT = async () => {
+        if (!window.confirm('¿Estás seguro de que quieres solicitar el rol de DT? Un administrador revisará tu petición.')) {
+            return;
+        }
+
+        try {
+            // Usamos la ruta correcta del backend: /usuarios/solicitar-dt
+            await api.post('/usuarios/solicitar-dt', {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('¡Solicitud enviada con éxito! Un administrador la revisará pronto.');
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'No se pudo enviar la solicitud. Es posible que ya tengas una pendiente.');
+        }
+    };
+
     if (loading) return <p className="text-center p-8 text-gray-400">Cargando tu panel...</p>;
     if (error) return <p className="text-center p-8 text-red-500">{error}</p>;
     if (!perfil) return <p className="text-center p-8">No se encontró tu perfil.</p>;
@@ -58,6 +76,18 @@ function JugadorDashboard() {
                 </p>
             </div>
             
+            {/* ✅ BOTÓN AÑADIDO PARA SOLICITAR ROL DE DT */}
+            {usuario && usuario.rol === 'jugador' && (
+                <div className="mb-8 text-center">
+                    <button
+                        onClick={handleSolicitarRolDT}
+                        className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors"
+                    >
+                        Quiero ser Director Técnico
+                    </button>
+                </div>
+            )}
+
             {/* Sección de Estadísticas de Carrera */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <StatCard label="Partidos Jugados" value={perfil.estadisticas_carrera.partidos} />
