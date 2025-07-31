@@ -23,19 +23,19 @@ function AdminUsuarioDetailPage() {
 
         try {
             // 1. Obtener datos del usuario
-            const usuarioRes = await api.get(`/usuarios/${usuarioId}`, { 
+            const usuarioRes = await api.get(`/api/usuarios/${usuarioId}`, { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
             setUsuario(usuarioRes.data);
 
             // 2. Obtener lista de todos los equipos
-            const equiposRes = await api.get('/equipos', { 
+            const equiposRes = await api.get('/api/equipos', { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
             setEquipos(equiposRes.data);
 
             // 3. Obtener sanciones del usuario
-            const sancionesRes = await api.get(`/admin/usuarios/${usuarioId}/sanciones`, { 
+            const sancionesRes = await api.get(`/api/admin/usuarios/${usuarioId}/sanciones`, { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
             setSanciones(sancionesRes.data);
