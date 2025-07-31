@@ -23,7 +23,7 @@ function EditarPerfilPage() {
                 numero_remera: usuario.numero_remera || ''
             });
             if (usuario.avatar_url) {
-                setPreview(`${import.meta.env.VITE_API_URL}${usuario.avatar_url}`);
+                setPreview(`${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}`);
             }
         }
     }, [usuario]);
