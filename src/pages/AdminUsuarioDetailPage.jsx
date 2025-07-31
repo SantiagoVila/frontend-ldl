@@ -19,12 +19,36 @@ function AdminUsuarioDetailPage() {
     const fetchData = async () => {
         if (!token) return;
         setLoading(true);
+        setError(''); // Limpiar errores previos
+
         try {
-            const [usuarioRes, equiposRes, sancionesRes] = await Promise.all([
-                api.get(`/usuarios/${usuarioId}`, { headers: { Authorization: `Bearer ${token}` } }),
-                api.get('/equipos', { headers: { Authorization: `Bearer ${token}` } }),
-                api.get(`/admin/usuarios/${usuarioId}/sanciones`, { headers: { Authorization: `Bearer ${token}` } })
-            ]);
+            // 1. Obtener datos del usuario
+            const usuarioRes = await api.get(`/usuarios/${usuarioId}`, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            setUsuario(usuarioRes.data);
+
+            // 2. Obtener lista de todos los equipos
+            const equiposRes = await api.get('/equipos', { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            setEquipos(equiposRes.data);
+
+            // 3. Obtener sanciones del usuario
+            const sancionesRes = await api.get(`/admin/usuarios/${usuarioId}/sanciones`, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            setSanciones(sancionesRes.data);
+
+        } catch (err) {
+            console.error("Error al cargar los datos del detalle de usuario:", err);
+            const errorMsg = err.response?.data?.error || 'No se pudo cargar la información. Intente de nuevo más tarde.';
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 // ...
 
