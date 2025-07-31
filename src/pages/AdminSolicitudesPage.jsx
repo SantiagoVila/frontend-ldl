@@ -87,7 +87,6 @@ function AdminSolicitudesPage() {
                                 <thead className="bg-gray-800">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">ID Solicitud</th>
-                                        {/* ✅ CAMBIO 1: Encabezado corregido */}
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Usuario</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Rol Solicitado</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Fecha</th>
@@ -99,7 +98,6 @@ function AdminSolicitudesPage() {
                                         <tr key={s.id} className="hover:bg-gray-800/50">
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-400 sm:pl-6">{s.id}</td>
                                             
-                                            {/* ✅ CAMBIO 2: Celda corregida para mostrar nombre y email */}
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                 <div className="font-medium text-white">{s.nombre_in_game}</div>
                                                 <div className="text-gray-400">{s.email_usuario}</div>
@@ -112,10 +110,12 @@ function AdminSolicitudesPage() {
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">{new Date(s.fecha_solicitud).toLocaleDateString()}</td>
                                             <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-2">
-                                                <button onClick={() => handleResponder(s.id, 'aprobada')} className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md shadow-sm">
+                                                {/* ✅ CAMBIO 1: de 'aprobada' a 'aprobado' */}
+                                                <button onClick={() => handleResponder(s.id, 'aprobado')} className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md shadow-sm">
                                                     Aprobar
                                                 </button>
-                                                <button onClick={() => handleResponder(s.id, 'rechazada')} className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md shadow-sm">
+                                                {/* ✅ CAMBIO 2: de 'rechazada' a 'rechazado' */}
+                                                <button onClick={() => handleResponder(s.id, 'rechazado')} className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md shadow-sm">
                                                     Rechazar
                                                 </button>
                                             </td>
