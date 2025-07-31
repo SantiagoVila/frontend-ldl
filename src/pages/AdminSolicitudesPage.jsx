@@ -20,8 +20,8 @@ function AdminSolicitudesPage() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSolicitudes(response.data.solicitudes);
-            setTotalPages(response.data.totalPages);
-            setCurrentPage(response.data.currentPage);
+            setTotalPages(response.data.totalPages || 1);
+            setCurrentPage(response.data.currentPage || 1);
         } catch (err) {
             const errorMessage = err.response?.data?.error || 'Error al cargar las solicitudes.';
             setError(errorMessage);
@@ -33,13 +33,13 @@ function AdminSolicitudesPage() {
 
     // --- HOOK DE EFECTO ---
     useEffect(() => {
-        fetchSolicitudesDeRol(currentPage);
-    }, [token]); // Se ejecuta solo la primera vez o si el token cambia
+        // Se pasa '1' para que siempre cargue la primera página al entrar
+        fetchSolicitudesDeRol(1); 
+    }, [token]);
 
     // --- FUNCIÓN PARA RESPONDER A UNA SOLICITUD ---
     const handleResponder = async (solicitudId, respuesta) => {
         try {
-            // CORRECTO: 'await' está dentro de una función 'async'
             await api.put(`/admin/solicitudes/${solicitudId}/responder`,
                 { respuesta },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -87,7 +87,8 @@ function AdminSolicitudesPage() {
                                 <thead className="bg-gray-800">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">ID Solicitud</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Email del Usuario</th>
+                                        {/* ✅ CAMBIO 1: Encabezado corregido */}
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Usuario</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Rol Solicitado</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">Fecha</th>
                                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">Acciones</th>
@@ -97,7 +98,13 @@ function AdminSolicitudesPage() {
                                     {solicitudes.length > 0 ? solicitudes.map(s => (
                                         <tr key={s.id} className="hover:bg-gray-800/50">
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-400 sm:pl-6">{s.id}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{s.email_usuario}</td>
+                                            
+                                            {/* ✅ CAMBIO 2: Celda corregida para mostrar nombre y email */}
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                                <div className="font-medium text-white">{s.nombre_in_game}</div>
+                                                <div className="text-gray-400">{s.email_usuario}</div>
+                                            </td>
+                                            
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                 <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-500/10 text-purple-400">
                                                     {s.rol_solicitado.toUpperCase()}
