@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import BotonVolver from '../components/ui/BotonVolver';
+import BotonVolver from '../components/ui/BotonVolver'; // Se importa el nuevo componente
 
 function AdminUsuarioDetailPage() {
     const [usuario, setUsuario] = useState(null);
@@ -19,64 +19,30 @@ function AdminUsuarioDetailPage() {
     const fetchData = async () => {
         if (!token) return;
         setLoading(true);
-        setError('');
         try {
             const [usuarioRes, equiposRes, sancionesRes] = await Promise.all([
-                api.get(`/api/usuarios/${usuarioId}`, { headers: { Authorization: `Bearer ${token}` } }),
-                api.get('/api/equipos', { headers: { Authorization: `Bearer ${token}` } }),
-                api.get(`/api/admin/usuarios/${usuarioId}/sanciones`, { headers: { Authorization: `Bearer ${token}` } })
+                api.get(`/usuarios/${usuarioId}`, { headers: { Authorization: `Bearer ${token}` } }),
+                api.get('/equipos', { headers: { Authorization: `Bearer ${token}` } }),
+                api.get(`/admin/usuarios/${usuarioId}/sanciones`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
-            setUsuario(usuarioRes.data);
-            setEquipos(equiposRes.data);
-            setSanciones(sancionesRes.data);
-        } catch (err) {
-            console.error("Error al cargar los datos del detalle de usuario:", err);
-            const errorMsg = err.response?.data?.error || 'No se pudo cargar la información. Intente de nuevo más tarde.';
-            setError(errorMsg);
-            toast.error(errorMsg);
-        } finally {
-            setLoading(false);
-        }
-    };
 
-    useEffect(() => {
-        fetchData();
-    }, [usuarioId, token]);
+// ...
 
-    const handleRolChange = async (newRol) => {
-        try {
-            await api.put(`/api/usuarios/${usuarioId}/rol`,
+await api.put(`/usuarios/${usuarioId}/rol`,
                 { rol: newRol },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            toast.success('¡Rol actualizado con éxito!');
-            fetchData();
-        } catch (err) {
-            toast.error(err.response?.data?.error || 'Error al actualizar el rol.');
-        }
-    };
 
-    const handleEquipoChange = async (e) => {
-        try {
-            await api.put(`/api/usuarios/${usuarioId}/equipo`,
+// ...
+
+await api.put(`/usuarios/${usuarioId}/equipo`,
                 { equipo_id: e.target.value || null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            toast.success('¡Equipo actualizado con éxito!');
-            fetchData();
-        } catch (err) {
-            toast.error(err.response?.data?.error || 'Error al actualizar el equipo.');
-        }
-    };
 
-    const handleSancionChange = (e) => {
-        setNuevaSancion({ ...nuevaSancion, [e.target.name]: e.target.value });
-    };
+// ...
 
-    const handleAplicarSancion = async (e) => {
-        e.preventDefault();
-        try {
-            await api.post('/api/admin/sanciones', {
+await api.post('/admin/sanciones', {
                 jugador_id: usuarioId,
                 motivo: nuevaSancion.motivo,
                 partidos_de_sancion: nuevaSancion.partidos_de_sancion
@@ -104,6 +70,7 @@ function AdminUsuarioDetailPage() {
                     <p className="mt-1 text-sm text-gray-500">Gestiona la información y permisos de {usuario.nombre_in_game}.</p>
                 </div>
                 <div className="px-4 py-5 sm:p-6 space-y-6">
+                    {/* Información Básica */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-semibold text-gray-600">Información de Contacto</h4>
@@ -115,6 +82,7 @@ function AdminUsuarioDetailPage() {
                         </div>
                     </div>
 
+                    {/* Gestión de Rol y Equipo */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label htmlFor="rol" className="block text-sm font-medium text-gray-700">Rol del Usuario</label>
@@ -137,12 +105,14 @@ function AdminUsuarioDetailPage() {
                 </div>
             </div>
 
+            {/* Gestión de Sanciones (solo para jugadores) */}
             {usuario.rol === 'jugador' && (
                 <div className="mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
                         <h3 className="text-lg leading-6 font-medium text-gray-900">Gestión de Sanciones</h3>
                     </div>
                     <div className="px-4 py-5 sm:p-6">
+                        {/* Formulario para aplicar sanción */}
                         <form onSubmit={handleAplicarSancion} className="space-y-4">
                             <div>
                                 <label htmlFor="motivo" className="block text-sm font-medium text-gray-700">Motivo de la Sanción</label>
@@ -159,6 +129,7 @@ function AdminUsuarioDetailPage() {
                             </div>
                         </form>
                         
+                        {/* Tabla con historial de sanciones */}
                         <div className="mt-6">
                             <h4 className="text-md font-medium text-gray-800">Historial de Sanciones</h4>
                             {sanciones.length > 0 ? (
