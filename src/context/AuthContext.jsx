@@ -5,7 +5,8 @@ import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
-const socket = io(import.meta.env.VITE_API_URL);
+// Se inicializa el socket sin auto-conectar
+const socket = io(import.meta.env.VITE_API_URL, { autoConnect: false });
 
 export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem('token'));
@@ -16,7 +17,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('token');
         setToken(null);
         setUsuario(null);
-        if (socket) socket.disconnect();
+        if (socket.connected) socket.disconnect();
     };
     
     const refreshUserData = async () => {
@@ -25,13 +26,17 @@ export function AuthProvider({ children }) {
 
         try {
             const decodedUser = jwtDecode(tokenGuardado);
+            
+            // ✅ CAMBIO CLAVE: Añadimos un parámetro que cambia con cada llamada para evitar la caché.
             const response = await api.get(`/usuarios/${decodedUser.id}`, {
-                headers: { Authorization: `Bearer ${tokenGuardado}` }
+                headers: { Authorization: `Bearer ${tokenGuardado}` },
+                params: { cacheBuster: new Date().getTime() } // Esto fuerza al navegador a pedir datos nuevos
             });
             
             const usuarioCompleto = { ...decodedUser, ...response.data };
             setUsuario(usuarioCompleto);
             
+            // Nos conectamos al socket solo si tenemos un usuario completo
             if (!socket.connected) {
                 socket.connect();
                 socket.emit('register', usuarioCompleto.id);
@@ -47,24 +52,33 @@ export function AuthProvider({ children }) {
         if (tokenGuardado) {
             refreshUserData();
         }
+        // Limpieza al desmontar el componente
+        return () => {
+            if (socket.connected) {
+                socket.disconnect();
+            }
+        };
     }, []);
 
     useEffect(() => {
-        socket.on('nueva_notificacion', (nuevaNotificacion) => {
-            setNotificaciones(notificacionesActuales => [nuevaNotificacion, ...notificacionesActuales]);
-            toast.info(`🔔 ${nuevaNotificacion.contenido}`);
-        });
-        return () => {
-            socket.off('nueva_notificacion');
-        };
-    }, []);
+        // Solo nos suscribimos a eventos si el socket está conectado
+        if (socket.connected) {
+            socket.on('nueva_notificacion', (nuevaNotificacion) => {
+                setNotificaciones(notificacionesActuales => [nuevaNotificacion, ...notificacionesActuales]);
+                toast.info(`🔔 ${nuevaNotificacion.contenido}`);
+            });
+            return () => {
+                socket.off('nueva_notificacion');
+            };
+        }
+    }, [socket.connected]);
 
     const login = async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
         const tokenRecibido = response.data.token;
         localStorage.setItem('token', tokenRecibido);
         setToken(tokenRecibido);
-        await refreshUserData();
+        await refreshUserData(); // refreshUserData se encargará de conectar el socket
     };
 
     const value = { token, usuario, notificaciones, setNotificaciones, login, logout, refreshUserData };
