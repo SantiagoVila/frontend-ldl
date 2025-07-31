@@ -181,7 +181,7 @@ function Navigation() {
                 <div className="relative">
                   <button onClick={() => setMostrarMenuUsuario(!mostrarMenuUsuario)} className="flex text-sm rounded-full focus:outline-none ring-2 ring-offset-2 ring-offset-gray-800 ring-cyan-500">
                     {/* ✅ LÍNEA CORREGIDA */}
-                    <img className="h-8 w-8 rounded-full object-cover" src={usuario.avatar_url ? `${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}` : 'https://via.placeholder.com/40'} alt="User Avatar" />
+                    <img className="h-8 w-8 rounded-full object-cover" src={usuario.avatar_url ? `${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}` : '/user-avatar-placeholder.png'} alt="User Avatar" />
                   </button>
                   {mostrarMenuUsuario && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuUsuario(false)}>
