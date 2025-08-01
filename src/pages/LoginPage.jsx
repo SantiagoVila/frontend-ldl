@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -8,27 +8,16 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    
-    // ✅ CAMBIO 1: Obtenemos el 'usuario' del contexto de autenticación
-    const { login, usuario } = useAuth();
-
-    // ✅ CAMBIO 2: Añadimos un useEffect que se encarga de la redirección
-    // Este código se ejecuta cada vez que el estado 'usuario' cambia.
-    useEffect(() => {
-        // Si el objeto 'usuario' existe (lo que significa que el login fue exitoso),
-        // entonces navegamos al dashboard.
-        if (usuario) {
-            navigate('/dashboard');
-        }
-    }, [usuario, navigate]); // Se ejecuta cuando 'usuario' o 'navigate' cambian
+    const { login, refreshUserData } = useAuth(); // ✅ Asegurate de importar refreshUserData
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
         try {
             await login(email, password);
-            // ✅ CAMBIO 3: Ya no necesitamos la línea de navigate aquí
+            await refreshUserData(); // ✅ Esperamos que usuario se cargue completamente
             toast.success("¡Bienvenido de nuevo!");
+            navigate('/dashboard'); // ✅ Redirección confiable
         } catch (err) {
             toast.error(err.response?.data?.error || 'Ocurrió un error al iniciar sesión');
         } finally {
