@@ -43,15 +43,21 @@ export function AuthProvider({ children }) {
         }
     };
     
+    // Este useEffect es vital para cuando el usuario ya tiene una sesión y refresca la página
     useEffect(() => {
-        if (token) {
+        if (token && !usuario) {
             refreshUserData();
         }
-        return () => {
-            if (socket.connected) socket.disconnect();
-        };
-    }, [token]);
 
+        // Función de limpieza para desconectar el socket al desmontar el componente
+        return () => {
+            if (socket.connected) {
+                socket.disconnect();
+            }
+        };
+    }, [token, usuario]);
+
+    // Este useEffect maneja los eventos del socket una vez que hay conexión
     useEffect(() => {
         if (socket.connected) {
             socket.on('nueva_notificacion', (nuevaNotificacion) => {
@@ -59,25 +65,53 @@ export function AuthProvider({ children }) {
                 toast.info(`🔔 ${nuevaNotificacion.contenido}`);
             });
 
-            // ✅ NUEVO LISTENER: Escucha el evento de actualización del equipo
             socket.on('equipo_actualizado', (data) => {
                 toast.info(`Tu equipo ha sido ${data.status}. Actualizando tu dashboard...`);
-                // Forzamos la actualización de los datos del usuario para obtener el nuevo equipo_id
-                refreshUserData();
+                refreshUserData(); // Forzamos la actualización de los datos del usuario
             });
 
+            // Función de limpieza para los listeners del socket
             return () => {
                 socket.off('nueva_notificacion');
-                socket.off('equipo_actualizado'); // Limpiamos el listener
+                socket.off('equipo_actualizado');
             };
         }
     }, [socket.connected]);
 
+    // ✅ FUNCIÓN DE LOGIN CORREGIDA Y CENTRALIZADA
     const login = async (email, password) => {
+        // 1. Obtenemos el token del backend
         const response = await api.post('/auth/login', { email, password });
         const tokenRecibido = response.data.token;
+
+        // 2. Guardamos el token en localStorage para persistencia
         localStorage.setItem('token', tokenRecibido);
-        setToken(tokenRecibido); // Esto disparará el useEffect para conectar y refrescar
+
+        // 3. Obtenemos los datos completos del usuario inmediatamente después
+        try {
+            const decodedUser = jwtDecode(tokenRecibido);
+            const userResponse = await api.get(`/usuarios/${decodedUser.id}`, {
+                headers: { Authorization: `Bearer ${tokenRecibido}` }
+            });
+            const usuarioCompleto = { ...decodedUser, ...userResponse.data };
+            
+            // 4. Actualizamos AMBOS estados. React puede agrupar estas actualizaciones
+            setUsuario(usuarioCompleto);
+            setToken(tokenRecibido); // Actualizar el token dispara el useEffect de arriba si es necesario
+
+            // 5. Conectamos el socket ahora que tenemos garantía de que el usuario existe
+            if (!socket.connected) {
+                socket.connect();
+                socket.emit('register', usuarioCompleto.id);
+            }
+
+        } catch (error) {
+            // Si falla la obtención de datos del usuario, limpiamos todo y notificamos
+            console.error("Error al obtener datos del usuario tras el login", error);
+            logout(); // Usamos tu función de logout para limpiar el estado y localStorage
+            // Relanzamos el error para que el componente LoginPage pueda mostrar un toast
+            throw new Error("No se pudieron cargar los datos del usuario."); 
+        }
     };
 
     const value = { token, usuario, notificaciones, setNotificaciones, login, logout, refreshUserData };

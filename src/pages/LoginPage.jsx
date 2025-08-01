@@ -8,18 +8,24 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login, refreshUserData } = useAuth(); // ✅ Asegurate de importar refreshUserData
+    const { login } = useAuth(); // ✅ Ya no necesitamos 'refreshUserData' aquí
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
         try {
+            // ✅ La función 'login' ahora es una operación atómica y completa.
+            // Cuando 'await login(...)' termine, tenemos la GARANTÍA de que el 
+            // token Y el usuario ya están cargados en el contexto.
             await login(email, password);
-            await refreshUserData(); // ✅ Esperamos que usuario se cargue completamente
+            
             toast.success("¡Bienvenido de nuevo!");
-            navigate('/dashboard'); // ✅ Redirección confiable
+            
+            // ✅ Ahora esta navegación es 100% segura y no causará una condición de carrera.
+            navigate('/dashboard');
         } catch (err) {
-            toast.error(err.response?.data?.error || 'Ocurrió un error al iniciar sesión');
+            // El error se captura si la API falla o si la carga de datos del usuario falla.
+            toast.error(err.response?.data?.error || err.message || 'Ocurrió un error al iniciar sesión');
         } finally {
             setLoading(false);
         }
@@ -47,6 +53,7 @@ function LoginPage() {
                                 id="email-address"
                                 name="email"
                                 type="email"
+                                autoComplete="email"
                                 required
                                 className={`${inputClass} rounded-t-md`}
                                 placeholder="Email"
@@ -60,6 +67,7 @@ function LoginPage() {
                                 id="password"
                                 name="password"
                                 type="password"
+                                autoComplete="current-password"
                                 required
                                 className={`${inputClass} rounded-b-md`}
                                 placeholder="Contraseña"
