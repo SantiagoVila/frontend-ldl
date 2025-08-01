@@ -10,23 +10,30 @@ const NoticiaModal = ({ noticia, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full border border-gray-700" onClick={e => e.stopPropagation()}>
-                <div className="p-6">
-                    <div className="flex justify-between items-center border-b border-gray-600 pb-3">
+            {/* ✅ CAMBIO: Se añade flex-col y max-h-[90vh] para controlar la altura máxima del modal */}
+            <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full border border-gray-700 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                
+                {/* 1. Cabecera (siempre visible) */}
+                <div className="p-6 border-b border-gray-600 flex-shrink-0">
+                    <div className="flex justify-between items-center">
                         <h3 className="text-2xl font-bold text-cyan-400" style={{ fontFamily: 'var(--font-heading)' }}>{noticia.titulo}</h3>
                         <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                     </div>
+                </div>
+
+                {/* 2. Cuerpo del Contenido (con scroll) */}
+                <div className="p-6 overflow-y-auto">
                     {noticia.imagen_url && (
                         <img 
                             src={`${import.meta.env.VITE_API_URL}${noticia.imagen_url}`} 
                             alt={noticia.titulo}
-                            // ✅ CAMBIO: de 'object-cover' a 'object-contain' para que la imagen se vea completa
-                            className="mt-4 w-full h-auto max-h-96 object-contain rounded-md"
+                            className="w-full h-auto max-h-96 object-contain rounded-md"
                         />
                     )}
-                    <div className="mt-4 text-gray-300 prose prose-invert max-h-[60vh] overflow-y-auto">
-                        <p>{noticia.contenido}</p>
-                    </div>
+                    {/* Usamos 'whitespace-pre-wrap' para respetar los saltos de línea del texto */}
+                    <p className="mt-4 text-gray-300 whitespace-pre-wrap">
+                        {noticia.contenido}
+                    </p>
                 </div>
             </div>
         </div>
