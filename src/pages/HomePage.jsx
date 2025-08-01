@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/api';
-import { useAuth } from '../context/AuthContext'; // Importamos useAuth
-import { toast } from 'react-toastify'; // Importamos toast
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 // --- Componente Modal para Noticias ---
 const NoticiaModal = ({ noticia, onClose }) => {
@@ -16,12 +16,12 @@ const NoticiaModal = ({ noticia, onClose }) => {
                         <h3 className="text-2xl font-bold text-cyan-400" style={{ fontFamily: 'var(--font-heading)' }}>{noticia.titulo}</h3>
                         <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                     </div>
-                    {/* ✅ Se muestra la imagen si existe */}
                     {noticia.imagen_url && (
                         <img 
                             src={`${import.meta.env.VITE_API_URL}${noticia.imagen_url}`} 
                             alt={noticia.titulo}
-                            className="mt-4 w-full h-auto max-h-64 object-cover rounded-md"
+                            // ✅ CAMBIO: de 'object-cover' a 'object-contain' para que la imagen se vea completa
+                            className="mt-4 w-full h-auto max-h-96 object-contain rounded-md"
                         />
                     )}
                     <div className="mt-4 text-gray-300 prose prose-invert max-h-[60vh] overflow-y-auto">
@@ -33,7 +33,7 @@ const NoticiaModal = ({ noticia, onClose }) => {
     );
 };
 
-// ... (El componente ScrollingTicker se queda igual)
+// --- Componente de Carrusel Animado ---
 const ScrollingTicker = ({ items, renderItem, heightClass = 'h-48' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -71,7 +71,7 @@ function HomePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [noticiaSeleccionada, setNoticiaSeleccionada] = useState(null);
-    const { usuario, token } = useAuth(); // Obtenemos el usuario y el token
+    const { usuario, token } = useAuth();
 
     const fetchHomePageData = async () => {
         try {
@@ -96,16 +96,15 @@ function HomePage() {
         fetchHomePageData();
     }, []);
 
-    // ✅ NUEVA FUNCIÓN PARA BORRAR NOTICIAS
     const handleBorrarNoticia = async (noticiaId, e) => {
-        e.stopPropagation(); // Evita que se abra el modal al hacer clic en el botón de borrar
+        e.stopPropagation();
         if (window.confirm("¿Estás seguro de que quieres borrar esta noticia?")) {
             try {
                 await api.delete(`/noticias/${noticiaId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success("Noticia borrada con éxito.");
-                fetchHomePageData(); // Recargamos los datos para que desaparezca de la lista
+                fetchHomePageData();
             } catch (err) {
                 toast.error(err.response?.data?.error || "Error al borrar la noticia.");
             }
@@ -145,7 +144,6 @@ function HomePage() {
                                                 <p className="font-semibold text-white">{noticia.titulo}</p>
                                                 <p className="text-sm text-gray-400">{new Date(noticia.fecha).toLocaleDateString()}</p>
                                             </div>
-                                            {/* ✅ BOTÓN DE BORRAR (solo visible para admins) */}
                                             {usuario && usuario.rol === 'admin' && (
                                                 <button 
                                                     onClick={(e) => handleBorrarNoticia(noticia.id, e)}
@@ -162,7 +160,6 @@ function HomePage() {
                             </div>
                         </div>
 
-                        {/* ... (El resto del componente HomePage se queda igual) ... */}
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
                             <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Últimos Resultados</h3>
                             <ScrollingTicker 
