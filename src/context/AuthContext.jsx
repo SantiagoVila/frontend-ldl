@@ -5,7 +5,6 @@ import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
-// Se inicializa el socket sin auto-conectar
 const socket = io(import.meta.env.VITE_API_URL, { autoConnect: false });
 
 export function AuthProvider({ children }) {
@@ -26,17 +25,14 @@ export function AuthProvider({ children }) {
 
         try {
             const decodedUser = jwtDecode(tokenGuardado);
-            
-            // ✅ CAMBIO CLAVE: Añadimos un parámetro que cambia con cada llamada para evitar la caché.
             const response = await api.get(`/usuarios/${decodedUser.id}`, {
                 headers: { Authorization: `Bearer ${tokenGuardado}` },
-                params: { cacheBuster: new Date().getTime() } // Esto fuerza al navegador a pedir datos nuevos
+                params: { cacheBuster: new Date().getTime() }
             });
             
             const usuarioCompleto = { ...decodedUser, ...response.data };
             setUsuario(usuarioCompleto);
             
-            // Nos conectamos al socket solo si tenemos un usuario completo
             if (!socket.connected) {
                 socket.connect();
                 socket.emit('register', usuarioCompleto.id);
@@ -48,27 +44,31 @@ export function AuthProvider({ children }) {
     };
     
     useEffect(() => {
-        const tokenGuardado = localStorage.getItem('token');
-        if (tokenGuardado) {
+        if (token) {
             refreshUserData();
         }
-        // Limpieza al desmontar el componente
         return () => {
-            if (socket.connected) {
-                socket.disconnect();
-            }
+            if (socket.connected) socket.disconnect();
         };
-    }, []);
+    }, [token]);
 
     useEffect(() => {
-        // Solo nos suscribimos a eventos si el socket está conectado
         if (socket.connected) {
             socket.on('nueva_notificacion', (nuevaNotificacion) => {
                 setNotificaciones(notificacionesActuales => [nuevaNotificacion, ...notificacionesActuales]);
                 toast.info(`🔔 ${nuevaNotificacion.contenido}`);
             });
+
+            // ✅ NUEVO LISTENER: Escucha el evento de actualización del equipo
+            socket.on('equipo_actualizado', (data) => {
+                toast.info(`Tu equipo ha sido ${data.status}. Actualizando tu dashboard...`);
+                // Forzamos la actualización de los datos del usuario para obtener el nuevo equipo_id
+                refreshUserData();
+            });
+
             return () => {
                 socket.off('nueva_notificacion');
+                socket.off('equipo_actualizado'); // Limpiamos el listener
             };
         }
     }, [socket.connected]);
@@ -77,8 +77,7 @@ export function AuthProvider({ children }) {
         const response = await api.post('/auth/login', { email, password });
         const tokenRecibido = response.data.token;
         localStorage.setItem('token', tokenRecibido);
-        setToken(tokenRecibido);
-        await refreshUserData(); // refreshUserData se encargará de conectar el socket
+        setToken(tokenRecibido); // Esto disparará el useEffect para conectar y refrescar
     };
 
     const value = { token, usuario, notificaciones, setNotificaciones, login, logout, refreshUserData };
