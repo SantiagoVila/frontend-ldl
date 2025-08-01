@@ -6,20 +6,35 @@ import { toast } from 'react-toastify';
 
 function DtCrearEquipoPage() {
     const [nombre, setNombre] = useState('');
-    const [escudo, setEscudo] = useState('');
+    const [escudo, setEscudo] = useState(null); // ✅ CAMBIO: Ahora guarda el archivo, no una URL
     const [formacion, setFormacion] = useState('4-4-2');
     const [loading, setLoading] = useState(false);
     const { token } = useAuth();
     const navigate = useNavigate();
 
+    const handleFileChange = (e) => {
+        setEscudo(e.target.files[0]);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        // ✅ CAMBIO: Usamos FormData para enviar el archivo y los datos
+        const formData = new FormData();
+        formData.append('nombre', nombre);
+        formData.append('formacion', formacion);
+        if (escudo) {
+            formData.append('escudo', escudo);
+        }
+
         try {
-            await api.post('/equipos/crear',
-                { nombre, escudo, formacion },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.post('/equipos/crear', formData, {
+                headers: { 
+                    'Content-Type': 'multipart/form-data', // Esencial para subir archivos
+                    Authorization: `Bearer ${token}` 
+                }
+            });
             toast.success('¡Solicitud de equipo enviada con éxito! Un admin la revisará.');
             navigate('/dashboard');
         } catch (err) {
@@ -29,7 +44,6 @@ function DtCrearEquipoPage() {
         }
     };
 
-    // Clases de estilo reutilizables para el nuevo tema
     const inputClass = "mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm";
     const labelClass = "block text-sm font-medium text-gray-300";
     const buttonClass = "w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:bg-cyan-800";
@@ -48,10 +62,19 @@ function DtCrearEquipoPage() {
                         <label htmlFor="nombre" className={labelClass}>Nombre del Equipo</label>
                         <input id="nombre" type="text" value={nombre} onChange={e => setNombre(e.target.value)} required className={inputClass} placeholder="Ej: Dragones FC" />
                     </div>
+                    
+                    {/* ✅ CAMBIO: El campo de texto se reemplaza por un campo de subida de archivo */}
                     <div>
-                        <label htmlFor="escudo" className={labelClass}>URL del Escudo (Opcional)</label>
-                        <input id="escudo" type="text" value={escudo} onChange={e => setEscudo(e.target.value)} className={inputClass} placeholder="https://ejemplo.com/escudo.png" />
+                        <label htmlFor="escudo" className={labelClass}>Escudo del Equipo (Opcional)</label>
+                        <input 
+                            id="escudo" 
+                            type="file" 
+                            onChange={handleFileChange} 
+                            accept="image/png, image/jpeg"
+                            className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-cyan-400 hover:file:bg-gray-600"
+                        />
                     </div>
+
                     <div>
                         <label htmlFor="formacion" className={labelClass}>Formación Preferida</label>
                         <select id="formacion" value={formacion} onChange={e => setFormacion(e.target.value)} className={inputClass}>
