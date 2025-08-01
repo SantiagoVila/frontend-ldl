@@ -31,11 +31,11 @@ function PublicEquipoPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <BotonVolver />
-            {/* Encabezado del Equipo */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg overflow-hidden mb-8">
                 <div className="p-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    {/* ✅ URL DEL ESCUDO CORREGIDA */}
                     <img 
-                        src={equipo.escudo || 'https://placehold.co/150x150/1f2937/a0aec0?text=Escudo'} 
+                        src={equipo.escudo ? `${import.meta.env.VITE_API_URL}${equipo.escudo}` : 'https://placehold.co/150x150/1f2937/a0aec0?text=Escudo'} 
                         alt={`Escudo de ${equipo.nombre}`} 
                         className="h-32 w-32 rounded-lg object-cover bg-gray-700 p-1 border-2 border-gray-600"
                     />
@@ -55,16 +55,18 @@ function PublicEquipoPage() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Columna Izquierda: Plantilla */}
                 <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                     <h3 className="text-xl font-semibold mb-4 text-cyan-400 border-b border-gray-600 pb-2" style={{fontFamily: 'var(--font-heading)'}}>Plantilla</h3>
                     <ul className="divide-y divide-gray-700">
                         {equipo.plantilla.map(jugador => (
                             <li key={jugador.id} className="py-3 flex items-center justify-between">
-                                <Link to={`/jugadores/${jugador.id}`} className="text-gray-200 font-medium hover:text-cyan-400">
+                                {/* ✅ ENLACE CONDICIONAL CORREGIDO */}
+                                <Link 
+                                    to={jugador.rol === 'dt' ? `/dts/${jugador.id}` : `/jugadores/${jugador.id}`} 
+                                    className="text-gray-200 font-medium hover:text-cyan-400"
+                                >
                                     <span className="font-bold text-gray-500 w-8 inline-block">{jugador.numero_remera || '-'}</span>
                                     {jugador.nombre_in_game}
-                                    {/* ✅ LÓGICA AÑADIDA: Mostramos una etiqueta si es el DT */}
                                     {jugador.rol === 'dt' && <span className="ml-2 text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">DT</span>}
                                 </Link>
                                 <span className="text-sm text-gray-400">{jugador.posicion}</span>
@@ -73,7 +75,6 @@ function PublicEquipoPage() {
                     </ul>
                 </div>
 
-                {/* Columna Derecha: Últimos Partidos */}
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                     <h3 className="text-xl font-semibold mb-4 text-cyan-400 border-b border-gray-600 pb-2" style={{fontFamily: 'var(--font-heading)'}}>Últimos Partidos</h3>
                     <div className="space-y-4">

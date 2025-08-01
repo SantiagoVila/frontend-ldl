@@ -30,7 +30,6 @@ function PublicDtProfilePage() {
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <BotonVolver />
-            {/* Encabezado del Perfil */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg overflow-hidden mb-8">
                 <div className="p-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
                     <img 
@@ -45,11 +44,11 @@ function PublicDtProfilePage() {
                 </div>
             </div>
 
-            {/* Información del Equipo Actual */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6 mb-8">
                 <h3 className="text-xl font-semibold mb-4 text-cyan-400 border-b border-gray-600 pb-2" style={{fontFamily: 'var(--font-heading)'}}>Equipo Actual</h3>
                 {dt.equipo_id ? (
                     <Link to={`/equipos/${dt.equipo_id}`} className="flex items-center space-x-4 group">
+                        {/* ✅ URL DEL ESCUDO CORREGIDA */}
                         <img 
                             src={dt.escudo_equipo ? `${import.meta.env.VITE_API_URL}${dt.escudo_equipo}` : 'https://placehold.co/64x64/1f2937/a0aec0?text=Escudo'} 
                             alt={`Escudo de ${dt.equipo_nombre}`} 
@@ -64,7 +63,6 @@ function PublicDtProfilePage() {
                 )}
             </div>
 
-            {/* Estadísticas como Jugador */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-4 text-cyan-400 border-b border-gray-600 pb-2" style={{fontFamily: 'var(--font-heading)'}}>Estadísticas como Jugador</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
