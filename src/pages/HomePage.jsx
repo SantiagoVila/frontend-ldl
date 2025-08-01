@@ -10,10 +10,9 @@ const NoticiaModal = ({ noticia, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            {/* ✅ CAMBIO: Se añade flex-col y max-h-[90vh] para controlar la altura máxima del modal */}
             <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full border border-gray-700 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 
-                {/* 1. Cabecera (siempre visible) */}
+                {/* 1. Cabecera (siempre visible, no se encoge) */}
                 <div className="p-6 border-b border-gray-600 flex-shrink-0">
                     <div className="flex justify-between items-center">
                         <h3 className="text-2xl font-bold text-cyan-400" style={{ fontFamily: 'var(--font-heading)' }}>{noticia.titulo}</h3>
@@ -21,17 +20,17 @@ const NoticiaModal = ({ noticia, onClose }) => {
                     </div>
                 </div>
 
-                {/* 2. Cuerpo del Contenido (con scroll) */}
-                <div className="p-6 overflow-y-auto">
+                {/* 2. Cuerpo del Contenido (ocupa el espacio restante y tiene scroll) */}
+                {/* ✅ CAMBIO: Se añade flex-1 y min-h-0 para que el scroll funcione correctamente */}
+                <div className="p-6 overflow-y-auto flex-1 min-h-0">
                     {noticia.imagen_url && (
                         <img 
                             src={`${import.meta.env.VITE_API_URL}${noticia.imagen_url}`} 
                             alt={noticia.titulo}
-                            className="w-full h-auto max-h-96 object-contain rounded-md"
+                            className="w-full h-auto max-h-96 object-contain rounded-md mb-4" // Se añade margen inferior
                         />
                     )}
-                    {/* Usamos 'whitespace-pre-wrap' para respetar los saltos de línea del texto */}
-                    <p className="mt-4 text-gray-300 whitespace-pre-wrap">
+                    <p className="text-gray-300 whitespace-pre-wrap">
                         {noticia.contenido}
                     </p>
                 </div>
