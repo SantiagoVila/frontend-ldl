@@ -49,6 +49,9 @@ import PublicDtProfilePage from './pages/PublicDtProfilePage';
 import ConfirmacionPage from './pages/ConfirmacionPage';
 import BotonVolver from './components/ui/BotonVolver';
 
+// ✅ --- IMPORTACIÓN AÑADIDA ---
+import AdminCopaDetailPage from './pages/AdminCopaDetailPage';
+
 import './App.css';
 
 function Navigation() {
@@ -117,7 +120,7 @@ function Navigation() {
                         {mostrarMenuAdmin && (
                             <div className="origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuAdmin(false)}>
                                 <div className="py-1">
-                                    <Link to="/admin/ligas" className={dropdownItemClass}>Gestionar Ligas</Link>
+                                    <Link to="/admin/ligas" className={dropdownItemClass}>Gestionar Competiciones</Link>
                                     <Link to="/admin/equipos" className={dropdownItemClass}>Gestionar Equipos</Link>
                                     <Link to="/admin/partidos" className={dropdownItemClass}>Aprobar Partidos</Link>
                                     <Link to="/admin/usuarios" className={dropdownItemClass}>Gestionar Usuarios</Link>
@@ -137,19 +140,19 @@ function Navigation() {
                     <div className="relative">
                         <button onClick={() => setMostrarMenuDT(!mostrarMenuDT)} className={navLinkClass}>DT</button>
                         {mostrarMenuDT && (
-                             <div className="origin-top-right absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuDT(false)}>
-                                <div className="py-1">
-                                    {usuario.equipo_id ? (
-                                        <>
-                                            <Link to="/dt/mi-equipo" className={dropdownItemClass}>Mi Equipo</Link>
-                                            <Link to="/dt/partidos" className={dropdownItemClass}>Reportar Partidos</Link>
-                                            <Link to="/dt/mercado" className={dropdownItemClass}>Mercado de Pases</Link>
-                                        </>
-                                    ) : (
-                                        <Link to="/dt/crear-equipo" className={dropdownItemClass}>Crear Equipo</Link>
-                                    )}
+                                <div className="origin-top-right absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuDT(false)}>
+                                    <div className="py-1">
+                                        {usuario.equipo_id ? (
+                                            <>
+                                                <Link to="/dt/mi-equipo" className={dropdownItemClass}>Mi Equipo</Link>
+                                                <Link to="/dt/partidos" className={dropdownItemClass}>Reportar Partidos</Link>
+                                                <Link to="/dt/mercado" className={dropdownItemClass}>Mercado de Pases</Link>
+                                            </>
+                                        ) : (
+                                            <Link to="/dt/crear-equipo" className={dropdownItemClass}>Crear Equipo</Link>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
                         )}
                     </div>
                   )}
@@ -163,34 +166,33 @@ function Navigation() {
                   </button>
                   {mostrarDropdownNotif && (
                     <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none z-10" onMouseLeave={() => setMostrarDropdownNotif(false)}>
-                      <div className="py-1">
-                        <div className="px-4 py-2 text-sm text-gray-200 font-bold border-b border-gray-600">Notificaciones</div>
-                        {notificaciones.length > 0 ? (
-                          notificaciones.slice(0, 5).map(n => (
-                            <a key={n.id} onClick={() => handleNotificacionClick(n)} className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 cursor-pointer ${!n.leida && 'bg-gray-800'}`}>
-                              {n.contenido}
-                              <p className="text-xs text-gray-400 mt-1">{new Date(n.fecha).toLocaleString()}</p>
-                            </a>
-                          ))
-                        ) : <p className="px-4 py-3 text-sm text-gray-500">No tienes notificaciones.</p>}
-                      </div>
+                        <div className="py-1">
+                            <div className="px-4 py-2 text-sm text-gray-200 font-bold border-b border-gray-600">Notificaciones</div>
+                            {notificaciones.length > 0 ? (
+                                notificaciones.slice(0, 5).map(n => (
+                                    <a key={n.id} onClick={() => handleNotificacionClick(n)} className={`block px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 cursor-pointer ${!n.leida && 'bg-gray-800'}`}>
+                                        {n.contenido}
+                                        <p className="text-xs text-gray-400 mt-1">{new Date(n.fecha).toLocaleString()}</p>
+                                    </a>
+                                ))
+                            ) : <p className="px-4 py-3 text-sm text-gray-500">No tienes notificaciones.</p>}
+                        </div>
                     </div>
                   )}
                 </div>
 
                 <div className="relative">
                   <button onClick={() => setMostrarMenuUsuario(!mostrarMenuUsuario)} className="flex text-sm rounded-full focus:outline-none ring-2 ring-offset-2 ring-offset-gray-800 ring-cyan-500">
-                    {/* ✅ LÍNEA CORREGIDA */}
                     <img className="h-8 w-8 rounded-full object-cover" src={usuario.avatar_url ? `${import.meta.env.VITE_API_URL}${usuario.avatar_url}?t=${new Date().getTime()}` : '/user-avatar-placeholder.png'} alt="User Avatar" />
                   </button>
                   {mostrarMenuUsuario && (
-                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuUsuario(false)}>
-                          <div className="py-1">
-                              <Link to="/editar-perfil" className={dropdownItemClass}>Editar Perfil</Link>
-                              <Link to="/cambiar-password" className={dropdownItemClass}>Cambiar Contraseña</Link>
-                              <button onClick={handleLogout} className={dropdownItemClass}>Cerrar Sesión</button>
-                          </div>
-                      </div>
+                        <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setMostrarMenuUsuario(false)}>
+                            <div className="py-1">
+                                <Link to="/editar-perfil" className={dropdownItemClass}>Editar Perfil</Link>
+                                <Link to="/cambiar-password" className={dropdownItemClass}>Cambiar Contraseña</Link>
+                                <button onClick={handleLogout} className={dropdownItemClass}>Cerrar Sesión</button>
+                            </div>
+                        </div>
                   )}
                 </div>
               </>
@@ -246,7 +248,9 @@ function App() {
             <Route path="/admin/fin-temporada" element={<ProtectedRoute><AdminFinTemporadaPage /></ProtectedRoute>} />
             <Route path="/admin/crear-noticia" element={<ProtectedRoute><AdminCrearNoticiaPage /></ProtectedRoute>} />
             <Route path="/admin/logs" element={<ProtectedRoute><AdminLogPage /></ProtectedRoute>} />
-            <Route path="/admin/copas/:id" element={<AdminCopaDetailPage />} />
+            
+            {/* ✅ RUTA CORREGIDA: Se añadió el wrapper de ruta protegida */}
+            <Route path="/admin/copas/:id" element={<ProtectedRoute><AdminCopaDetailPage /></ProtectedRoute>} />
             
             <Route path="/dt/crear-equipo" element={<ProtectedRoute><DtCrearEquipoPage /></ProtectedRoute>} />
             <Route path="/dt/mi-equipo" element={<ProtectedRoute><DtMiEquipoPage /></ProtectedRoute>} />
@@ -265,4 +269,3 @@ function App() {
 }
 
 export default App;
-        
