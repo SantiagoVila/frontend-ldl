@@ -246,6 +246,7 @@ function App() {
             <Route path="/admin/fin-temporada" element={<ProtectedRoute><AdminFinTemporadaPage /></ProtectedRoute>} />
             <Route path="/admin/crear-noticia" element={<ProtectedRoute><AdminCrearNoticiaPage /></ProtectedRoute>} />
             <Route path="/admin/logs" element={<ProtectedRoute><AdminLogPage /></ProtectedRoute>} />
+            <Route path="/admin/copas/:id" element={<AdminCopaDetailPage />} />
             
             <Route path="/dt/crear-equipo" element={<ProtectedRoute><DtCrearEquipoPage /></ProtectedRoute>} />
             <Route path="/dt/mi-equipo" element={<ProtectedRoute><DtMiEquipoPage /></ProtectedRoute>} />
