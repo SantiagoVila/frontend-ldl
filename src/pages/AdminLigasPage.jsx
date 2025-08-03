@@ -5,12 +5,12 @@ import { toast } from 'react-toastify';
 import api from '../api/api';
 
 function AdminLigasPage() {
-    const [ligas, setLigas] = useState([]); // Esto podría incluir copas en el futuro
+    const [ligas, setLigas] = useState([]);
     const [loading, setLoading] = useState(true);
     const { token } = useAuth();
 
     // --- Estados para el nuevo formulario ---
-    const [tipoCompeticion, setTipoCompeticion] = useState('liga'); // 'liga' o 'copa'
+    const [tipoCompeticion, setTipoCompeticion] = useState('liga');
     const [nombre, setNombre] = useState('');
     const [temporada, setTemporada] = useState('');
     const [categoria, setCategoria] = useState('1');
@@ -27,10 +27,11 @@ function AdminLigasPage() {
             try {
                 const [ligasRes, equiposRes] = await Promise.all([
                     api.get('/ligas', { headers: { Authorization: `Bearer ${token}` } }),
-                    api.get('/equipos?estado=aprobado')
+                    // ✅ CORRECCIÓN: Se añadieron los headers de autorización a esta llamada
+                    api.get('/equipos?estado=aprobado', { headers: { Authorization: `Bearer ${token}` } })
                 ]);
                 setLigas(ligasRes.data);
-                setEquiposDisponibles(equiposRes.data);
+                setEquiposDisponibles(equiposRes.data.equipos || equiposRes.data); // Compatible con o sin paginación
             } catch (err) {
                 toast.error('Error al cargar los datos iniciales.');
             } finally {
@@ -56,13 +57,17 @@ function AdminLigasPage() {
             setFormError('El nombre es obligatorio.');
             return;
         }
-        if (equiposSeleccionados.length < 2) {
-            setFormError('Debes seleccionar al menos 2 equipos.');
-            return;
-        }
-        if (tipoCompeticion === 'copa' && !esPotenciaDeDos(equiposSeleccionados.length)) {
-            setFormError(`Para una copa, el número de equipos debe ser una potencia de 2 (4, 8, 16). Has seleccionado ${equiposSeleccionados.length}.`);
-            return;
+        
+        // La creación de ligas no requiere selección de equipos, la de copas sí
+        if (tipoCompeticion === 'copa') {
+            if (equiposSeleccionados.length < 2) {
+                setFormError('Debes seleccionar al menos 2 equipos para una copa.');
+                return;
+            }
+            if (!esPotenciaDeDos(equiposSeleccionados.length)) {
+                setFormError(`Para una copa, el número de equipos debe ser una potencia de 2 (4, 8, 16). Has seleccionado ${equiposSeleccionados.length}.`);
+                return;
+            }
         }
 
         setIsSubmitting(true);
@@ -83,7 +88,12 @@ function AdminLigasPage() {
             });
 
             toast.success(`¡${tipoCompeticion.charAt(0).toUpperCase() + tipoCompeticion.slice(1)} creada con éxito!`);
-            // Aquí podrías recargar la lista de competiciones
+            
+            // Recargamos las ligas para ver la nueva si es una liga
+            if (tipoCompeticion === 'liga') {
+                 setLigas(prevLigas => [response.data, ...prevLigas]);
+            }
+
             setNombre('');
             setTemporada('');
             setEquiposSeleccionados([]);
@@ -117,7 +127,6 @@ function AdminLigasPage() {
                         </div>
                     </div>
                     
-                    {/* Campos Comunes */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="nombre" className={labelClass}>Nombre</label>
@@ -129,7 +138,6 @@ function AdminLigasPage() {
                         </div>
                     </div>
 
-                    {/* Campo solo para Ligas */}
                     {tipoCompeticion === 'liga' && (
                         <div>
                             <label htmlFor="categoria" className={labelClass}>Categoría</label>
@@ -139,7 +147,6 @@ function AdminLigasPage() {
                         </div>
                     )}
 
-                    {/* Selección de Equipos (solo para Copas) */}
                     {tipoCompeticion === 'copa' && (
                          <div>
                             <label className={labelClass}>Seleccionar Equipos ({equiposSeleccionados.length} seleccionados)</label>
@@ -164,7 +171,7 @@ function AdminLigasPage() {
                 </form>
             </div>
             
-            {/* LISTA DE LIGAS EXISTENTES (podríamos añadir copas aquí más adelante) */}
+            {/* LISTA DE LIGAS EXISTENTES */}
             <div className="bg-gray-800/50 p-6 rounded-lg">
                 <h3 className="text-lg font-medium text-cyan-400">Ligas Existentes</h3>
                 <ul className="divide-y divide-gray-700 mt-4">
