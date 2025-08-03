@@ -11,23 +11,18 @@ const NoticiaModal = ({ noticia, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
             <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full border border-gray-700 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                
-                {/* 1. Cabecera (siempre visible, no se encoge) */}
                 <div className="p-6 border-b border-gray-600 flex-shrink-0">
                     <div className="flex justify-between items-center">
                         <h3 className="text-2xl font-bold text-cyan-400" style={{ fontFamily: 'var(--font-heading)' }}>{noticia.titulo}</h3>
                         <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                     </div>
                 </div>
-
-                {/* 2. Cuerpo del Contenido (ocupa el espacio restante y tiene scroll) */}
-                {/* ✅ CAMBIO: Se añade flex-1 y min-h-0 para que el scroll funcione correctamente */}
                 <div className="p-6 overflow-y-auto flex-1 min-h-0">
                     {noticia.imagen_url && (
                         <img 
                             src={`${import.meta.env.VITE_API_URL}${noticia.imagen_url}`} 
                             alt={noticia.titulo}
-                            className="w-full h-auto max-h-96 object-contain rounded-md mb-4" // Se añade margen inferior
+                            className="w-full h-auto max-h-96 object-contain rounded-md mb-4"
                         />
                     )}
                     <p className="text-gray-300 whitespace-pre-wrap">
@@ -45,11 +40,9 @@ const ScrollingTicker = ({ items, renderItem, heightClass = 'h-48' }) => {
 
     useEffect(() => {
         if (items.length <= 1) return;
-
         const intervalId = setInterval(() => {
             setCurrentIndex(prevIndex => (prevIndex + 1) % items.length);
         }, 4000);
-
         return () => clearInterval(intervalId);
     }, [items]);
 
@@ -70,7 +63,8 @@ const ScrollingTicker = ({ items, renderItem, heightClass = 'h-48' }) => {
 
 
 function HomePage() {
-    const [ligas, setLigas] = useState([]);
+    // ✅ Estado unificado para Ligas y Copas
+    const [competiciones, setCompeticiones] = useState([]); 
     const [ultimosResultados, setUltimosResultados] = useState([]);
     const [ultimasNoticias, setUltimasNoticias] = useState([]);
     const [ultimosFichajes, setUltimosFichajes] = useState([]);
@@ -81,13 +75,20 @@ function HomePage() {
 
     const fetchHomePageData = async () => {
         try {
-            const [ligasRes, resultadosRes, noticiasRes, fichajesRes] = await Promise.all([
+            // ✅ Se añade la petición para obtener las copas públicas
+            const [ligasRes, copasRes, resultadosRes, noticiasRes, fichajesRes] = await Promise.all([
                 api.get('/ligas/publico'),
+                api.get('/copas/publico'), 
                 api.get('/partidos/publico/recientes'),
                 api.get('/noticias?limite=5'),
                 api.get('/stats/ultimos-fichajes?limite=10')
             ]);
-            setLigas(ligasRes.data);
+            
+            // ✅ Combinamos las ligas y copas en un solo array, añadiendo un 'tipo' para diferenciarlas
+            const ligas = ligasRes.data.map(l => ({ ...l, tipo: 'liga' }));
+            const copas = copasRes.data.map(c => ({ ...c, tipo: 'copa' }));
+            setCompeticiones([...ligas, ...copas]);
+            
             setUltimosResultados(resultadosRes.data);
             setUltimasNoticias(noticiasRes.data);
             setUltimosFichajes(fichajesRes.data);
@@ -140,7 +141,8 @@ function HomePage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
+                       {/* ... Tu widget de Noticias se mantiene igual ... */}
+                       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
                             <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Noticias</h3>
                             <div className="space-y-4">
                                 {ultimasNoticias.length > 0 ? (
@@ -151,13 +153,8 @@ function HomePage() {
                                                 <p className="text-sm text-gray-400">{new Date(noticia.fecha).toLocaleDateString()}</p>
                                             </div>
                                             {usuario && usuario.rol === 'admin' && (
-                                                <button 
-                                                    onClick={(e) => handleBorrarNoticia(noticia.id, e)}
-                                                    className="text-red-500 hover:text-red-400 p-2 rounded-full"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" />
-                                                    </svg>
+                                                <button onClick={(e) => handleBorrarNoticia(noticia.id, e)} className="text-red-500 hover:text-red-400 p-2 rounded-full">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /></svg>
                                                 </button>
                                             )}
                                         </div>
@@ -165,7 +162,7 @@ function HomePage() {
                                 ) : <p className="text-gray-500">No hay noticias publicadas.</p>}
                             </div>
                         </div>
-
+                        {/* ... Tu widget de Últimos Resultados se mantiene igual ... */}
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
                             <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Últimos Resultados</h3>
                             <ScrollingTicker 
@@ -183,22 +180,26 @@ function HomePage() {
                             />
                         </div>
                     </div>
-
                     <div className="space-y-8">
+                        {/* ✅ WIDGET MODIFICADO: Ahora muestra Ligas y Copas */}
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
-                            <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Ligas</h3>
+                            <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Competiciones</h3>
                             <ul className="space-y-3">
-                                {ligas.length > 0 ? (
-                                    ligas.map(liga => (
-                                        <li key={liga.id}>
-                                            <Link to={`/ligas/${liga.id}`} className="text-indigo-400 hover:text-indigo-300 font-bold text-lg">
-                                                {liga.nombre}
+                                {competiciones.length > 0 ? (
+                                    competiciones.map(comp => (
+                                        <li key={`${comp.tipo}-${comp.id}`}>
+                                            <Link to={`/${comp.tipo}s/${comp.id}`} className="text-indigo-400 hover:text-indigo-300 font-bold text-lg">
+                                                {comp.nombre}
                                             </Link>
+                                            <span className={`ml-2 text-xs font-bold uppercase px-2 py-1 rounded-full ${comp.tipo === 'copa' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                                {comp.tipo}
+                                            </span>
                                         </li>
                                     ))
-                                ) : <p className="text-gray-500">No hay ligas activas.</p>}
+                                ) : <p className="text-gray-500">No hay competiciones activas.</p>}
                             </ul>
                         </div>
+                        {/* ... Tu widget de Mercado se mantiene igual ... */}
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-xl p-6">
                             <h3 className="text-2xl font-bold text-cyan-400 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Mercado</h3>
                             <ScrollingTicker 

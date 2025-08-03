@@ -80,7 +80,7 @@ function AdminDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             <StatCard to="/admin/usuarios" number={stats.total_usuarios} label="Usuarios Registrados" icon="usuarios" />
                             <StatCard to="/admin/equipos" number={stats.total_equipos} label="Equipos Aprobados" icon="equipos" />
-                            <StatCard to="/admin/ligas" number={stats.total_ligas} label="Ligas Creadas" icon="ligas" />
+                            <StatCard to="/admin/ligas" number={stats.total_ligas} label="Competiciones Creadas" icon="ligas" />
                         </div>
                     </div>
                 </div>

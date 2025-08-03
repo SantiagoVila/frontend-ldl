@@ -22,25 +22,26 @@ function AdminLigasPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // --- Carga de datos inicial ---
+    const fetchData = async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const [ligasRes, copasRes, equiposRes] = await Promise.all([
+                api.get('/ligas', { headers: { Authorization: `Bearer ${token}` } }),
+                api.get('/copas', { headers: { Authorization: `Bearer ${token}` } }),
+                api.get('/equipos?estado=aprobado', { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            setLigas(ligasRes.data);
+            setCopas(copasRes.data);
+            setEquiposDisponibles(equiposRes.data.equipos || equiposRes.data);
+        } catch (err) {
+            toast.error('Error al cargar los datos iniciales.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            if (!token) return;
-            setLoading(true);
-            try {
-                const [ligasRes, copasRes, equiposRes] = await Promise.all([
-                    api.get('/ligas', { headers: { Authorization: `Bearer ${token}` } }),
-                    api.get('/copas', { headers: { Authorization: `Bearer ${token}` } }),
-                    api.get('/equipos?estado=aprobado', { headers: { Authorization: `Bearer ${token}` } })
-                ]);
-                setLigas(ligasRes.data);
-                setCopas(copasRes.data);
-                setEquiposDisponibles(equiposRes.data.equipos || equiposRes.data);
-            } catch (err) {
-                toast.error('Error al cargar los datos iniciales.');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, [token]);
 
@@ -80,14 +81,12 @@ function AdminLigasPage() {
 
             toast.success(`¡${tipoCompeticion.charAt(0).toUpperCase() + tipoCompeticion.slice(1)} creada con éxito!`);
             
-            // Recargar listas
             if (tipoCompeticion === 'liga') {
                 setLigas(prev => [response.data, ...prev]);
             } else {
                 setCopas(prev => [response.data, ...prev]);
             }
 
-            // Limpiar formulario
             setNombre('');
             setTemporada('');
             setEquiposSeleccionados([]);
@@ -99,8 +98,29 @@ function AdminLigasPage() {
             setIsSubmitting(false);
         }
     };
+
+    const handleBorrarLiga = async (ligaId, ligaNombre) => {
+        if (!window.confirm(`¿Seguro que quieres borrar la liga "${ligaNombre}"?`)) return;
+        try {
+            await api.delete(`/ligas/${ligaId}`, { headers: { Authorization: `Bearer ${token}` } });
+            toast.success('Liga eliminada');
+            setLigas(prev => prev.filter(l => l.id !== ligaId));
+        } catch (err) {
+            toast.error('Error al borrar la liga');
+        }
+    };
+
+    const handleBorrarCopa = async (copaId, copaNombre) => {
+        if (!window.confirm(`¿Seguro que quieres borrar la copa "${copaNombre}"?`)) return;
+        try {
+            await api.delete(`/copas/${copaId}`, { headers: { Authorization: `Bearer ${token}` } });
+            toast.success('Copa eliminada');
+            setCopas(prev => prev.filter(c => c.id !== copaId));
+        } catch (err) {
+            toast.error('Error al borrar la copa');
+        }
+    };
     
-    // --- Lógica para el nuevo selector de equipos ---
     const handleSelectEquipo = (equipoId) => {
         setEquiposSeleccionados(prev => [...prev, equipoId]);
     };
@@ -121,18 +141,15 @@ function AdminLigasPage() {
     const labelClass = "block text-sm font-medium text-gray-300";
     const inputClass = "mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm";
 
-
     if (loading) return <p className="text-center p-8 text-gray-400">Cargando...</p>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-white mb-8">Gestión de Competiciones</h2>
 
-            {/* FORMULARIO DE CREACIÓN */}
             <div className="bg-gray-800/50 p-6 rounded-lg mb-8">
                 <h3 className="text-lg font-medium text-cyan-400">Crear Nueva Competición</h3>
                 <form onSubmit={handleCrearCompeticion} className="mt-4 space-y-6">
-                    {/* Tipo de Competición */}
                     <div>
                         <label className={labelClass}>Tipo</label>
                         <div className="flex items-center space-x-4 mt-2">
@@ -211,8 +228,9 @@ function AdminLigasPage() {
                     <h3 className="text-lg font-medium text-cyan-400">Ligas Existentes</h3>
                     <ul className="divide-y divide-gray-700 mt-4">
                         {ligas.map(liga => (
-                            <li key={liga.id} className="py-2">
-                                <Link to={`/admin/ligas/${liga.id}`} className="text-indigo-400 hover:text-indigo-300">{liga.nombre} ({liga.temporada})</Link>
+                            <li key={liga.id} className="py-2 flex justify-between items-center">
+                                <Link to={`/admin/ligas/${liga.id}`} className="text-indigo-400 hover:text-indigo-300">{liga.nombre} ({liga.temporada || 'N/A'})</Link>
+                                <button onClick={() => handleBorrarLiga(liga.id, liga.nombre)} className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded">Borrar</button>
                             </li>
                         ))}
                     </ul>
@@ -221,11 +239,9 @@ function AdminLigasPage() {
                     <h3 className="text-lg font-medium text-cyan-400">Copas Existentes</h3>
                     <ul className="divide-y divide-gray-700 mt-4">
                         {copas.map(copa => (
-                            <li key={copa.id} className="py-2">
-                                <Link to={`/admin/copas/${copa.id}`} className="text-indigo-400 hover:text-indigo-300">
-    {copa.nombre} ({copa.temporada})
-</Link>
-                                <span className="text-indigo-400">{copa.nombre} ({copa.temporada})</span>
+                            <li key={copa.id} className="py-2 flex justify-between items-center">
+                                <Link to={`/admin/copas/${copa.id}`} className="text-indigo-400 hover:text-indigo-300">{copa.nombre} ({copa.temporada || 'N/A'})</Link>
+                                <button onClick={() => handleBorrarCopa(copa.id, copa.nombre)} className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded">Borrar</button>
                             </li>
                         ))}
                     </ul>
