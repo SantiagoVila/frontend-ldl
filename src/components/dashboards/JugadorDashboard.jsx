@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
-import { toast } from 'react-toastify'; // Importamos toast para las notificaciones
+import { toast } from 'react-toastify';
 
 // --- Componente de Tarjeta de Estadística Reutilizable ---
 const StatCard = ({ label, value }) => (
@@ -46,14 +46,12 @@ function JugadorDashboard() {
         fetchJugadorData();
     }, [usuario, token]);
 
-    // ✅ FUNCIÓN PARA MANEJAR LA SOLICITUD DE ROL
     const handleSolicitarRolDT = async () => {
         if (!window.confirm('¿Estás seguro de que quieres solicitar el rol de DT? Un administrador revisará tu petición.')) {
             return;
         }
 
         try {
-            // Usamos la ruta correcta del backend: /usuarios/solicitar-dt
             await api.post('/usuarios/solicitar-dt', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -76,7 +74,6 @@ function JugadorDashboard() {
                 </p>
             </div>
             
-            {/* ✅ BOTÓN AÑADIDO PARA SOLICITAR ROL DE DT */}
             {usuario && usuario.rol === 'jugador' && (
                 <div className="mb-8 text-center">
                     <button
@@ -88,26 +85,39 @@ function JugadorDashboard() {
                 </div>
             )}
 
-            {/* Sección de Estadísticas de Carrera */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <StatCard label="Partidos Jugados" value={perfil.estadisticas_carrera.partidos} />
                 <StatCard label="Goles" value={perfil.estadisticas_carrera.goles} />
                 <StatCard label="Asistencias" value={perfil.estadisticas_carrera.asistencias} />
             </div>
 
-            {/* Sección de Próximos Partidos */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-4 text-cyan-400">Próximos Partidos</h3>
                 <div className="space-y-4">
                     {calendario.length > 0 ? (
-                        calendario.map(partido => (
-                            <div key={partido.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                <span className="w-2/5 text-right font-semibold text-gray-300">{partido.nombre_local}</span>
-                                <span className="text-xl font-bold text-gray-500 px-4">VS</span>
-                                <span className="w-2/5 text-left font-semibold text-gray-300">{partido.nombre_visitante}</span>
-                                <span className="text-gray-400 text-sm">{new Date(partido.fecha).toLocaleDateString()}</span>
-                            </div>
-                        ))
+                        calendario.map(partido => {
+                            // ✅ --- CORRECCIÓN DE FECHA ---
+                            // La API nos da una fecha como "2025-08-04".
+                            // Para evitar que JS la interprete como UTC, reemplazamos los guiones por barras.
+                            // new Date('2025/08/04') la tratará como una fecha local.
+                            const fechaCorrecta = new Date(partido.fecha.replace(/-/g, '/'));
+                            const fechaFormateada = fechaCorrecta.toLocaleDateString('es-AR', {
+                                day: 'numeric',
+                                month: 'numeric',
+                                year: 'numeric',
+                            });
+                            // -------------------------
+
+                            return (
+                                <div key={partido.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                                    <span className="w-2/5 text-right font-semibold text-gray-300">{partido.nombre_local}</span>
+                                    <span className="text-xl font-bold text-gray-500 px-4">VS</span>
+                                    <span className="w-2/5 text-left font-semibold text-gray-300">{partido.nombre_visitante}</span>
+                                    {/* Usamos la fecha ya formateada y corregida */}
+                                    <span className="text-gray-400 text-sm">{fechaFormateada}</span>
+                                </div>
+                            );
+                        })
                     ) : (
                         <p className="text-center text-gray-500 py-4">No tienes partidos pendientes.</p>
                     )}
