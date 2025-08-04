@@ -23,27 +23,36 @@ function JugadorDashboard() {
     useEffect(() => {
         if (!usuario) return;
 
-        const fetchJugadorData = async () => {
+        const fetchPerfil = async () => {
             try {
-                const [perfilRes, calendarioRes] = await Promise.all([
-                    api.get(`/jugadores/publico/${usuario.id}`),
-                    api.get('/jugadores/mi-calendario', {
-                        headers: { Authorization: `Bearer ${token}` }
-                    })
-                ]);
-
+                const perfilRes = await api.get(`/jugadores/publico/${usuario.id}`);
                 setPerfil(perfilRes.data);
-                setCalendario(calendarioRes.data);
-
             } catch (err) {
-                setError('No se pudo cargar la información de tu panel.');
+                setError('No se pudo cargar tu perfil.');
                 console.error(err);
-            } finally {
-                setLoading(false);
             }
         };
 
-        fetchJugadorData();
+        const fetchCalendario = async () => {
+            try {
+                const calendarioRes = await api.get('/jugadores/mi-calendario', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setCalendario(calendarioRes.data);
+            } catch (err) {
+                // Este error es esperado si el jugador no tiene equipo, así que no lo mostramos.
+                console.log('No se pudo cargar el calendario, probablemente el jugador no tiene equipo.');
+                setCalendario([]); // Aseguramos que el calendario esté vacío
+            }
+        };
+
+        const fetchAllData = async () => {
+            setLoading(true);
+            await Promise.all([fetchPerfil(), fetchCalendario()]);
+            setLoading(false);
+        };
+
+        fetchAllData();
     }, [usuario, token]);
 
     const handleSolicitarRolDT = async () => {
@@ -130,7 +139,7 @@ function JugadorDashboard() {
                             );
                         })
                     ) : (
-                        <p className="text-center text-gray-500 py-4">No tienes partidos pendientes.</p>
+                        <p className="text-center text-gray-500 py-4">No tienes equipo, por lo que no hay partidos pendientes.</p>
                     )}
                 </div>
             </div>
