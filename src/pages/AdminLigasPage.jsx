@@ -29,7 +29,7 @@ function AdminLigasPage() {
             const [ligasRes, copasRes, equiposRes] = await Promise.all([
                 api.get('/ligas', { headers: { Authorization: `Bearer ${token}` } }),
                 api.get('/copas', { headers: { Authorization: `Bearer ${token}` } }),
-                api.get('/equipos?estado=aprobado', { headers: { Authorization: `Bearer ${token}` } })
+                api.get('/equipos?estado=aprobado&limit=2000', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setLigas(ligasRes.data);
             setCopas(copasRes.data);
@@ -98,7 +98,7 @@ function AdminLigasPage() {
             setIsSubmitting(false);
         }
     };
-
+    
     const handleBorrarLiga = async (ligaId, ligaNombre) => {
         if (!window.confirm(`¿Seguro que quieres borrar la liga "${ligaNombre}"?`)) return;
         try {
@@ -140,6 +140,7 @@ function AdminLigasPage() {
 
     const labelClass = "block text-sm font-medium text-gray-300";
     const inputClass = "mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm";
+
 
     if (loading) return <p className="text-center p-8 text-gray-400">Cargando...</p>;
 
