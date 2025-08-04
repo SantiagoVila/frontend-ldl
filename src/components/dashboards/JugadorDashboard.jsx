@@ -97,24 +97,35 @@ function JugadorDashboard() {
                     {calendario.length > 0 ? (
                         calendario.map(partido => {
                             let fechaFormateada = "Fecha a confirmar";
-                            // ✅ CORRECCIÓN: Verificamos si la fecha existe antes de intentar formatearla
                             if (partido.fecha) {
-                                const fechaCorrecta = new Date(partido.fecha.replace(/-/g, '/'));
-                                if (!isNaN(fechaCorrecta.getTime())) {
-                                    fechaFormateada = fechaCorrecta.toLocaleDateString('es-AR', {
-                                        day: 'numeric',
-                                        month: 'numeric',
-                                        year: 'numeric',
+                                const fecha = new Date(partido.fecha);
+                                if (!isNaN(fecha.getTime())) {
+                                    fechaFormateada = fecha.toLocaleDateString('es-AR', {
+                                        day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'UTC'
                                     });
                                 }
                             }
 
+                            const tipoCompeticionTag = (
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${partido.tipo_competicion === 'liga' ? 'bg-blue-600 text-blue-100' : 'bg-green-600 text-green-100'}`}>
+                                    {partido.tipo_competicion === 'liga' ? 'Liga' : 'Copa'}
+                                </span>
+                            );
+
                             return (
-                                <div key={partido.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                                    <span className="w-2/5 text-right font-semibold text-gray-300">{partido.nombre_local}</span>
-                                    <span className="text-xl font-bold text-gray-500 px-4">VS</span>
-                                    <span className="w-2/5 text-left font-semibold text-gray-300">{partido.nombre_visitante}</span>
-                                    <span className="text-gray-400 text-sm">{fechaFormateada}</span>
+                                <div key={partido.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg flex-wrap">
+                                    <div className="w-full md:w-auto flex justify-between md:justify-start items-center mb-2 md:mb-0">
+                                        <span className="w-2/5 text-right font-semibold text-gray-300">{partido.nombre_local}</span>
+                                        <span className="text-xl font-bold text-gray-500 px-4">VS</span>
+                                        <span className="w-2/5 text-left font-semibold text-gray-300">{partido.nombre_visitante}</span>
+                                    </div>
+                                    <div className="w-full md:w-auto flex items-center justify-between md:justify-end space-x-4">
+                                        <div className="text-center">
+                                            <p className="text-gray-300 text-sm">{partido.nombre_competicion}</p>
+                                            <p className="text-gray-400 text-xs">{fechaFormateada}</p>
+                                        </div>
+                                        {tipoCompeticionTag}
+                                    </div>
                                 </div>
                             );
                         })
