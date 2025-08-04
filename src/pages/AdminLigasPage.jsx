@@ -29,7 +29,7 @@ function AdminLigasPage() {
             const [ligasRes, copasRes, equiposRes] = await Promise.all([
                 api.get('/ligas', { headers: { Authorization: `Bearer ${token}` } }),
                 api.get('/copas', { headers: { Authorization: `Bearer ${token}` } }),
-                api.get('/equipos?estado=aprobado&limit=2000', { headers: { Authorization: `Bearer ${token}` } })
+                api.get('/equipos?estado=aprobado&limit=200', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setLigas(ligasRes.data);
             setCopas(copasRes.data);
@@ -53,14 +53,15 @@ function AdminLigasPage() {
             setFormError('El nombre es obligatorio.');
             return;
         }
+        
+        // ✅ --- VALIDACIÓN ACTUALIZADA ---
         if (tipoCompeticion === 'copa') {
-            if (equiposSeleccionados.length < 2) {
-                setFormError('Debes seleccionar al menos 2 equipos para una copa.');
+            if (equiposSeleccionados.length < 4) {
+                setFormError('Para una copa con grupos, necesitas al menos 4 equipos.');
                 return;
             }
-            const esPotenciaDeDos = (n) => n > 0 && (n & (n - 1)) === 0;
-            if (!esPotenciaDeDos(equiposSeleccionados.length)) {
-                setFormError(`Para una copa, el número de equipos debe ser una potencia de 2 (4, 8, 16). Has seleccionado ${equiposSeleccionados.length}.`);
+            if (equiposSeleccionados.length % 2 !== 0) {
+                setFormError(`El número de equipos para la copa debe ser par. Has seleccionado ${equiposSeleccionados.length}.`);
                 return;
             }
         }
