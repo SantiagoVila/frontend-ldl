@@ -51,6 +51,7 @@ import BotonVolver from './components/ui/BotonVolver';
 
 // ✅ --- IMPORTACIÓN AÑADIDA ---
 import AdminCopaDetailPage from './pages/AdminCopaDetailPage';
+import PublicoCopaPage from './pages/PublicoCopaPage'; // <-- La nueva página pública
 
 import './App.css';
 
@@ -222,6 +223,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/equipos/:id" element={<PublicEquipoPage />} />
             <Route path="/ligas/:id" element={<PublicLigaPage />} />
+            <Route path="/copas/:id" element={<PublicoCopaPage />} />
             <Route path="/jugadores/:id" element={<PublicJugadorPage />} />
             <Route path="/lideres" element={<LideresPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
