@@ -96,24 +96,24 @@ function JugadorDashboard() {
                 <div className="space-y-4">
                     {calendario.length > 0 ? (
                         calendario.map(partido => {
-                            // ✅ --- CORRECCIÓN DE FECHA ---
-                            // La API nos da una fecha como "2025-08-04".
-                            // Para evitar que JS la interprete como UTC, reemplazamos los guiones por barras.
-                            // new Date('2025/08/04') la tratará como una fecha local.
-                            const fechaCorrecta = new Date(partido.fecha.replace(/-/g, '/'));
-                            const fechaFormateada = fechaCorrecta.toLocaleDateString('es-AR', {
-                                day: 'numeric',
-                                month: 'numeric',
-                                year: 'numeric',
-                            });
-                            // -------------------------
+                            let fechaFormateada = "Fecha a confirmar";
+                            // ✅ CORRECCIÓN: Verificamos si la fecha existe antes de intentar formatearla
+                            if (partido.fecha) {
+                                const fechaCorrecta = new Date(partido.fecha.replace(/-/g, '/'));
+                                if (!isNaN(fechaCorrecta.getTime())) {
+                                    fechaFormateada = fechaCorrecta.toLocaleDateString('es-AR', {
+                                        day: 'numeric',
+                                        month: 'numeric',
+                                        year: 'numeric',
+                                    });
+                                }
+                            }
 
                             return (
                                 <div key={partido.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                                     <span className="w-2/5 text-right font-semibold text-gray-300">{partido.nombre_local}</span>
                                     <span className="text-xl font-bold text-gray-500 px-4">VS</span>
                                     <span className="w-2/5 text-left font-semibold text-gray-300">{partido.nombre_visitante}</span>
-                                    {/* Usamos la fecha ya formateada y corregida */}
                                     <span className="text-gray-400 text-sm">{fechaFormateada}</span>
                                 </div>
                             );
