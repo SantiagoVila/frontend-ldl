@@ -56,7 +56,9 @@ function DtPartidosPage() {
                                 <tbody className="divide-y divide-gray-800 bg-gray-900/50">
                                     {partidos.length > 0 ? partidos.map(partido => (
                                         <tr key={`${partido.tipo}-${partido.id}`} className="hover:bg-gray-800/50">
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-400 sm:pl-6">{new Date(partido.fecha).toLocaleDateString()}</td>
+                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-400 sm:pl-6">
+                                                {partido.fecha ? new Date(partido.fecha).toLocaleDateString() : 'Fecha a confirmar'}
+                                            </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-white">
                                                 {partido.nombre_local} vs {partido.nombre_visitante}
                                             </td>
