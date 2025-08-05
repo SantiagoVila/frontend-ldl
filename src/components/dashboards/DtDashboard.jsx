@@ -71,14 +71,39 @@ function DtDashboard() {
         return (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-white" style={{fontFamily: 'var(--font-heading)'}}>Dashboard del Director Técnico</h2>
+                    <div className="flex justify-center items-center gap-4">
+                        {stats.equipoInfo?.escudo && <img src={`${import.meta.env.VITE_API_URL}${stats.equipoInfo.escudo}`} alt="Escudo del equipo" className="h-16 w-16 rounded-full" />}
+                        <h2 className="text-3xl font-bold text-white" style={{fontFamily: 'var(--font-heading)'}}>{stats.equipoInfo?.nombre || 'Mi Equipo'}</h2>
+                    </div>
                     <p className="mt-1 text-lg text-gray-400">
                         Resumen de tu equipo y próximas acciones.
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* ... (código de las StatCards se queda igual) ... */}
+                    <StatCard label="Jugadores en Plantilla" value={stats.playerCount} icon={<span>👥</span>} link="/dt/mi-equipo" />
+                    <StatCard label="Puntos en Liga" value={stats.leaguePosition?.puntos || 0} icon={<span>🏆</span>} />
+                    <StatCard label="Partidos Jugados (Liga)" value={stats.leaguePosition?.partidos_jugados || 0} icon={<span>⚔️</span>} />
                 </div>
+                {stats.nextMatch && (
+                    <div className="mt-10 bg-gray-800/50 p-6 rounded-lg">
+                        <h3 className="text-xl font-semibold text-cyan-400 mb-4">Próximo Partido</h3>
+                        <div className="flex justify-between items-center">
+                            <div className="text-center">
+                                <p className="text-lg font-bold text-white">{stats.nextMatch.nombre_local}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-white">VS</p>
+                                <p className="text-sm text-gray-400">{new Date(stats.nextMatch.fecha).toLocaleString()}</p>
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stats.nextMatch.tipo === 'liga' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                                    {stats.nextMatch.tipo}
+                                </span>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-lg font-bold text-white">{stats.nextMatch.nombre_visitante}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }

@@ -63,6 +63,7 @@ function AdminCopaDetailPage() {
     const [loading, setLoading] = useState(true);
     const { id: copaId } = useParams();
     const { token } = useAuth();
+    const [jornadasPorDia, setJornadasPorDia] = useState(1); // Nuevo estado para jornadas por día
 
     const fetchCopaDetalle = async () => {
         if (!token) return;

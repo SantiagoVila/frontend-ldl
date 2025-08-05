@@ -9,6 +9,7 @@ function AdminLigaDetailPage() {
     const [liga, setLiga] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [jornadasPorDia, setJornadasPorDia] = useState(1); // Nuevo estado para jornadas por día
     
     const { id: ligaId } = useParams();
     const { token } = useAuth();
@@ -38,7 +39,8 @@ function AdminLigaDetailPage() {
         try {
             const datosFixture = {
                 dias_de_juego: ['tuesday', 'wednesday', 'friday'],
-                fecha_arranque: '2025-09-01'
+                fecha_arranque: '2025-09-01',
+                jornadas_por_dia: jornadasPorDia // Añadimos el nuevo parámetro
             };
             const response = await api.post(
                 `/admin/ligas/${ligaId}/generar-fixture`,
@@ -111,9 +113,19 @@ function AdminLigaDetailPage() {
                             <dt className="text-sm font-medium text-gray-400">Acciones</dt>
                             <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2 space-x-2">
                                 {!liga.fixture_generado && liga.equipos && liga.equipos.length > 1 && (
-                                    <button onClick={handleGenerarFixture} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                                        Generar Fixture
-                                    </button>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={jornadasPorDia}
+                                            onChange={(e) => setJornadasPorDia(Number(e.target.value))}
+                                            className="w-20 px-2 py-1 border border-gray-600 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500"
+                                            aria-label="Jornadas por día"
+                                        />
+                                        <button onClick={handleGenerarFixture} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                                            Generar Fixture
+                                        </button>
+                                    </div>
                                 )}
                                 {liga.estado_temporada === 'activa' && liga.fixture_generado && (
                                     <button onClick={handleFinalizarTemporada} className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700">

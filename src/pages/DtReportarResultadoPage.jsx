@@ -14,7 +14,7 @@ function DtReportarResultadoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     
-    const { id: partidoId } = useParams();
+    const { tipo, id } = useParams(); // <-- Cambiado para recibir tipo y id
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ function DtReportarResultadoPage() {
             setLoading(true);
             try {
                 const [partidoRes, equipoRes] = await Promise.all([
-                    api.get(`/partidos/${partidoId}`, { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get(`/partidos/dt/partido-para-reportar/${tipo}/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
                     api.get(`/equipos/${usuario.equipo_id}/perfil-detallado`, { headers: { Authorization: `Bearer ${token}` } })
                 ]);
                 
@@ -54,7 +54,7 @@ function DtReportarResultadoPage() {
         };
 
         fetchData();
-    }, [partidoId, token, usuario]);
+    }, [tipo, id, token, usuario]);
 
     // --- MANEJADORES DE FORMULARIO ---
     const handleStatChange = (jugadorId, campo, valor) => {
@@ -76,13 +76,13 @@ function DtReportarResultadoPage() {
         }
 
         const formData = new FormData();
-        formData.append('resultado_local', golesLocal);
-        formData.append('resultado_visitante', golesVisitante);
-        formData.append('estadisticas', JSON.stringify(estadisticas));
+        formData.append('goles_local', golesLocal);
+        formData.append('goles_visitante', golesVisitante);
+        formData.append('jugadores', JSON.stringify(estadisticas.filter(s => s.goles > 0 || s.asistencias > 0)));
         formData.append('imagen_resultado', file);
 
         try {
-            await api.put(`/partidos/dt/reportar/${partidoId}`, formData, {
+            await api.put(`/partidos/dt/reportar/${tipo}/${id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
@@ -111,6 +111,9 @@ function DtReportarResultadoPage() {
                 <p className="mt-1 text-lg text-gray-400">
                     {partido.nombre_local} vs {partido.nombre_visitante}
                 </p>
+                <span className={`mt-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${partido.tipo === 'liga' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                    {partido.tipo}
+                </span>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">

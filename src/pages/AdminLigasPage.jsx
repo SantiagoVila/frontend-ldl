@@ -22,6 +22,7 @@ function AdminLigasPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fechaArranque, setFechaArranque] = useState(new Date().toISOString().split('T')[0]);
     const [diasDeJuego, setDiasDeJuego] = useState([]);
+    const [jornadasPorDia, setJornadasPorDia] = useState(1); // Nuevo estado para jornadas por día
 
     // --- Carga de datos inicial ---
     const fetchData = async () => {
@@ -81,13 +82,14 @@ function AdminLigasPage() {
         try {
             const endpoint = tipoCompeticion === 'liga' ? '/ligas' : '/copas';
             const payload = {
-                nombre,
-                temporada,
-                fecha_arranque: fechaArranque,
-                dias_de_juego: diasDeJuego,
-                equipos: payloadEquipos,
-                ...(tipoCompeticion === 'liga' && { categoria }),
-            };
+            nombre,
+            temporada,
+            fecha_arranque: fechaArranque,
+            dias_de_juego: diasDeJuego,
+            jornadas_por_dia: jornadasPorDia,
+            equipos: payloadEquipos,
+            ...(tipoCompeticion === 'liga' && { categoria }),
+        };
 
             const response = await api.post(endpoint, payload, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -190,7 +192,20 @@ function AdminLigasPage() {
                         </div>
                     </div>
 
-                    {tipoCompeticion === 'liga' && (<div><label htmlFor="categoria" className={labelClass}>Categoría</label><select id="categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} className={inputClass}>{[1, 2, 3, 4].map(cat => <option key={cat} value={cat}>Categoría {cat}</option>)}</select></div>)}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {tipoCompeticion === 'liga' && (<div><label htmlFor="categoria" className={labelClass}>Categoría</label><select id="categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} className={inputClass}>{[1, 2, 3, 4].map(cat => <option key={cat} value={cat}>Categoría {cat}</option>)}</select></div>)}
+                        <div>
+                            <label htmlFor="jornadas_por_dia" className={labelClass}>Jornadas por Día</label>
+                            <input
+                                type="number"
+                                id="jornadas_por_dia"
+                                min="1"
+                                value={jornadasPorDia}
+                                onChange={(e) => setJornadasPorDia(Number(e.target.value))}
+                                className={inputClass}
+                            />
+                        </div>
+                    </div>
                     
                     <div>
                         <label className={labelClass}>Seleccionar Equipos ({equiposSeleccionados.length})</label>
