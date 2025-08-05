@@ -84,24 +84,26 @@ function DtDashboard() {
                     <StatCard label="Puntos en Liga" value={stats.leaguePosition?.puntos || 0} icon={<span>🏆</span>} />
                     <StatCard label="Partidos Jugados (Liga)" value={stats.leaguePosition?.partidos_jugados || 0} icon={<span>⚔️</span>} />
                 </div>
-                {stats.nextMatch && (
+                {stats.nextMatches && stats.nextMatches.length > 0 && (
                     <div className="mt-10 bg-gray-800/50 p-6 rounded-lg">
-                        <h3 className="text-xl font-semibold text-cyan-400 mb-4">Próximo Partido</h3>
-                        <div className="flex justify-between items-center">
-                            <div className="text-center">
-                                <p className="text-lg font-bold text-white">{stats.nextMatch.nombre_local}</p>
+                        <h3 className="text-xl font-semibold text-cyan-400 mb-4">Próximos Partidos</h3>
+                        {stats.nextMatches.map((match, index) => (
+                            <div key={index} className="flex justify-between items-center mb-4 p-2 border border-gray-700 rounded-md">
+                                <div className="text-center">
+                                    <p className="text-lg font-bold text-white">{match.nombre_local}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-white">VS</p>
+                                    <p className="text-sm text-gray-400">{match.fecha ? new Date(match.fecha).toLocaleString() : 'Fecha a confirmar'}</p>
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${match.tipo === 'liga' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                                        {match.tipo}
+                                    </span>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-lg font-bold text-white">{match.nombre_visitante}</p>
+                                </div>
                             </div>
-                            <div className="text-center">
-                                <p className="text-2xl font-bold text-white">VS</p>
-                                <p className="text-sm text-gray-400">{new Date(stats.nextMatch.fecha).toLocaleString()}</p>
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stats.nextMatch.tipo === 'liga' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
-                                    {stats.nextMatch.tipo}
-                                </span>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-lg font-bold text-white">{stats.nextMatch.nombre_visitante}</p>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 )}
             </div>
