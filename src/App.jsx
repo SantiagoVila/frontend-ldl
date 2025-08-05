@@ -257,7 +257,7 @@ function App() {
             <Route path="/dt/crear-equipo" element={<ProtectedRoute><DtCrearEquipoPage /></ProtectedRoute>} />
             <Route path="/dt/mi-equipo" element={<ProtectedRoute><DtMiEquipoPage /></ProtectedRoute>} />
             <Route path="/dt/partidos" element={<ProtectedRoute><DtPartidosPage /></ProtectedRoute>} />
-            <Route path="/dt/partidos/:id/reportar" element={<ProtectedRoute><DtReportarResultadoPage /></ProtectedRoute>} />
+            <Route path="/dt/partidos/:tipo/:id/reportar" element={<ProtectedRoute><DtReportarResultadoPage /></ProtectedRoute>} />
             <Route path="/dt/mercado" element={<ProtectedRoute><DtMercadoPage /></ProtectedRoute>} />
             
             <Route path="/jugador/mis-ofertas" element={<ProtectedRoute><JugadorOfertasPage /></ProtectedRoute>} />
