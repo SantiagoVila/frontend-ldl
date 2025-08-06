@@ -20,20 +20,14 @@ function DtReportarResultadoPage() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!token || !usuario?.equipo_id) {
-                setError("No se puede cargar el partido. Asegúrate de estar logueado y tener un equipo.");
-                setLoading(false);
-                return;
-            }
+            if (!token || !usuario?.equipo_id) return;
             setLoading(true);
             try {
                 const [partidoRes, equipoRes] = await Promise.all([
-                    api.get(`/partidos/dt/partido-para-reportar/${tipo}/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-                    api.get(`/equipos/${usuario.equipo_id}/perfil-detallado`, { headers: { Authorization: `Bearer ${token}` } })
+                    api.get(`/partidos/dt/partido-para-reportar/${tipo}/${id}`),
+                    api.get(`/equipos/${usuario.equipo_id}/perfil-detallado`)
                 ]);
-
                 setPartido(partidoRes.data);
-
                 const statsIniciales = equipoRes.data.plantilla.map(jugador => ({
                     jugador_id: jugador.id,
                     nombre_in_game: jugador.nombre_in_game,
@@ -41,7 +35,6 @@ function DtReportarResultadoPage() {
                     asistencias: 0,
                 }));
                 setEstadisticas(statsIniciales);
-
             } catch (err) {
                 const errorMessage = err.response?.data?.error || 'Error al cargar los datos.';
                 setError(errorMessage);
@@ -50,7 +43,6 @@ function DtReportarResultadoPage() {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, [tipo, id, token, usuario]);
 
@@ -72,28 +64,25 @@ function DtReportarResultadoPage() {
         }
 
         const formData = new FormData();
-        formData.append('goles_local', golesLocal);
-        formData.append('goles_visitante', golesVisitante);
-
-        // --- CAMBIO PARA DEPURACIÓN ---
-        // Estas líneas nos mostrarán en la consola el contenido exacto de la variable.
-        const estadisticasFiltradas = estadisticas.filter(s => s.goles > 0 || s.asistencias > 0);
-        console.log("1. 'estadisticas' ANTES de filtrar:", estadisticas);
-        console.log("2. 'estadisticas' DESPUÉS de filtrar:", estadisticasFiltradas);
-        // --- FIN DEL CAMBIO ---
-
-        // Se utiliza la variable creada para asegurar que se envía lo mismo que se muestra en consola.
-        formData.append('jugadores', JSON.stringify(estadisticasFiltradas));
+        formData.append('goles_local_reportados', golesLocal);
+        formData.append('goles_visitante_reportados', golesVisitante);
         formData.append('imagen_resultado', file);
 
+        const estadisticasParaEnviar = estadisticas
+            .filter(s => s.goles > 0 || s.asistencias > 0)
+            .map(s => ({
+                jugador_id: s.jugador_id,
+                goles: s.goles,
+                asistencias: s.asistencias
+            }));
+            
+        formData.append('jugadores', JSON.stringify(estadisticasParaEnviar));
+
         try {
-            await api.put(`/partidos/dt/reportar/${tipo}/${id}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
+            await api.post(`/partidos/reportar/${tipo}/${id}`, formData, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            toast.success('¡Resultado reportado con éxito! Pendiente de confirmación del administrador.');
+            toast.success('¡Reporte enviado con éxito! Esperando el reporte del rival.');
             navigate('/dt/partidos');
         } catch (err) {
             toast.error(err.response?.data?.error || 'Error al enviar el reporte.');
@@ -163,7 +152,7 @@ function DtReportarResultadoPage() {
                 <div className="pt-5">
                     <div className="flex justify-end">
                         <button type="submit" className={buttonClass}>
-                            Enviar Reporte Completo
+                            Enviar Reporte
                         </button>
                     </div>
                 </div>
