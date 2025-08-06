@@ -18,9 +18,11 @@ function AdminPartidosPage() {
             const response = await api.get('/partidos?estado=pendiente', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Filtramos para mostrar solo aquellos que tienen un resultado que confirmar
-            const partidosAConfirmar = response.data.filter(p => p.resultado_local !== null && p.resultado_visitante !== null);
+
+            // ✅ CORRECCIÓN 1: Usamos 'goles_local' y 'goles_visitante' para filtrar
+            const partidosAConfirmar = response.data.filter(p => p.goles_local !== null && p.goles_visitante !== null);
             setPartidos(partidosAConfirmar);
+
         } catch (err) {
             const errorMessage = err.response?.data?.error || 'Error al cargar los partidos pendientes.';
             setError(errorMessage);
@@ -38,10 +40,12 @@ function AdminPartidosPage() {
     // --- FUNCIÓN PARA CONFIRMAR EL RESULTADO DE UN PARTIDO ---
     const handleConfirmarResultado = async (partidoId) => {
         try {
-            // CORRECTO: 'await' está dentro de una función 'async'
-            await api.put(`/partidos/${partidoId}/confirmar`, {}, {
+            // ✅ CORRECCIÓN 2: Enviamos { estado: 'aprobado' } en el cuerpo de la petición
+            const cuerpoDeLaPeticion = { estado: 'aprobado' };
+            await api.put(`/partidos/${partidoId}/confirmar`, cuerpoDeLaPeticion, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            
             toast.success('Resultado confirmado y partido finalizado con éxito.');
             // Recargamos la lista para que el partido confirmado desaparezca
             fetchPartidosPendientes();
@@ -79,11 +83,12 @@ function AdminPartidosPage() {
                             {partidos.length > 0 ? partidos.map(partido => (
                                 <tr key={partido.id}>
                                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                        <div className="font-medium text-white">{partido.equipo_local_nombre} vs {partido.equipo_visitante_nombre}</div>
-                                        <div className="text-gray-400">Jornada {partido.jornada} - {partido.liga_nombre}</div>
+                                        {/* NOTA: Asegúrate que la API devuelva estos campos o ajústalos a los nombres correctos como 'nombre_local' */}
+                                        <div className="font-medium text-white">{partido.nombre_local} vs {partido.nombre_visitante}</div>
+                                        <div className="text-gray-400">Jornada {partido.jornada || 'N/A'} - {partido.liga_nombre || 'N/A'}</div>
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                        <span className="font-bold text-lg">{partido.resultado_local} - {partido.resultado_visitante}</span>
+                                        <span className="font-bold text-lg">{partido.goles_local} - {partido.goles_visitante}</span>
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
                                         {partido.imagen_resultado_url ? (
