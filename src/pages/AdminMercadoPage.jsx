@@ -14,7 +14,10 @@ function AdminMercadoPage() {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await api.get('/mercado/estado'); // Llama a la nueva ruta pública
+            // ✅ CORRECCIÓN: Se añade el token a la cabecera de la petición
+            const response = await api.get('/mercado/estado', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setMercado(response.data);
             setFormFechas({
                 inicio: response.data.fecha_inicio ? new Date(response.data.fecha_inicio).toISOString().slice(0, 16) : '',
@@ -40,10 +43,12 @@ function AdminMercadoPage() {
             return;
         }
         try {
-            // Llama a la misma ruta, pero el backend ahora actualiza el 'estado' a 'automatico'
+            // ✅ CORRECCIÓN: Se añade el token a la cabecera de la petición
             await api.put('/admin/mercado/programar', {
                 fecha_inicio: formFechas.inicio,
                 fecha_fin: formFechas.fin
+            }, { 
+                headers: { Authorization: `Bearer ${token}` } 
             });
             toast.success('Período de mercado programado con éxito. El modo ahora es automático.');
             fetchEstadoMercado();
@@ -53,10 +58,12 @@ function AdminMercadoPage() {
     };
 
     const handleAbrirCerrarManualmente = async (accion) => {
-        // Llama a las nuevas rutas POST
         const endpoint = accion === 'abrir' ? '/admin/mercado/abrir' : '/admin/mercado/cerrar';
         try {
-            await api.post(endpoint, {});
+            // ✅ CORRECCIÓN: Se añade el token a la cabecera de la petición
+            await api.post(endpoint, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             toast.success(`Mercado ${accion === 'abrir' ? 'abierto' : 'cerrado'} manualmente.`);
             fetchEstadoMercado();
         } catch (err) {
