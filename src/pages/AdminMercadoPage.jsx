@@ -4,22 +4,18 @@ import { toast } from 'react-toastify';
 import api from '../api/api';
 
 function AdminMercadoPage() {
-    const [mercado, setMercado] = useState({ abierto: false, fecha_inicio: '', fecha_fin: '' });
+    const [mercado, setMercado] = useState({ abierto: false, estado: 'automatico', fecha_inicio: '', fecha_fin: '' });
     const [formFechas, setFormFechas] = useState({ inicio: '', fin: '' });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const { token } = useAuth();
 
-    // --- FUNCIÓN PARA CARGAR EL ESTADO ACTUAL DEL MERCADO ---
     const fetchEstadoMercado = async () => {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await api.get('/mercado/estado', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/mercado/estado'); // Llama a la nueva ruta pública
             setMercado(response.data);
-            // Pre-llenar el formulario con las fechas actuales si existen
             setFormFechas({
                 inicio: response.data.fecha_inicio ? new Date(response.data.fecha_inicio).toISOString().slice(0, 16) : '',
                 fin: response.data.fecha_fin ? new Date(response.data.fecha_fin).toISOString().slice(0, 16) : ''
@@ -33,12 +29,10 @@ function AdminMercadoPage() {
         }
     };
 
-    // --- HOOK DE EFECTO ---
     useEffect(() => {
         fetchEstadoMercado();
     }, [token]);
 
-    // --- FUNCIÓN PARA PROGRAMAR LAS FECHAS DEL MERCADO ---
     const handleProgramarMercado = async (e) => {
         e.preventDefault();
         if (!formFechas.inicio || !formFechas.fin) {
@@ -46,29 +40,25 @@ function AdminMercadoPage() {
             return;
         }
         try {
-            await api.put('/admin/mercado/programar',
-                {
-                    fecha_inicio: formFechas.inicio,
-                    fecha_fin: formFechas.fin
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            toast.success('Período de mercado programado con éxito.');
-            fetchEstadoMercado(); // Recargar estado para ver los cambios
+            // Llama a la misma ruta, pero el backend ahora actualiza el 'estado' a 'automatico'
+            await api.put('/admin/mercado/programar', {
+                fecha_inicio: formFechas.inicio,
+                fecha_fin: formFechas.fin
+            });
+            toast.success('Período de mercado programado con éxito. El modo ahora es automático.');
+            fetchEstadoMercado();
         } catch (err) {
             toast.error(err.response?.data?.error || 'Error al programar las fechas.');
         }
     };
 
-    // --- FUNCIÓN PARA ABRIR O CERRAR MANUALMENTE ---
     const handleAbrirCerrarManualmente = async (accion) => {
+        // Llama a las nuevas rutas POST
         const endpoint = accion === 'abrir' ? '/admin/mercado/abrir' : '/admin/mercado/cerrar';
         try {
-            await api.post(endpoint, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success(`Mercado ${accion === 'abrir' ? 'abierto' : 'cerrado'} correctamente.`);
-            fetchEstadoMercado(); // Recargar estado
+            await api.post(endpoint, {});
+            toast.success(`Mercado ${accion === 'abrir' ? 'abierto' : 'cerrado'} manualmente.`);
+            fetchEstadoMercado();
         } catch (err) {
             toast.error(err.response?.data?.error || 'Error al cambiar el estado del mercado.');
         }
@@ -86,20 +76,15 @@ function AdminMercadoPage() {
             <div className="sm:flex sm:items-center sm:justify-between mb-8">
                 <div>
                     <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>Gestión del Mercado</h2>
-                    <p className="mt-1 text-sm text-gray-400">
-                        Controla los períodos de fichajes de la plataforma.
-                    </p>
+                    <p className="mt-1 text-sm text-gray-400">Controla los períodos de fichajes de la plataforma.</p>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Panel de Estado Actual */}
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                     <h3 className="text-lg font-medium text-cyan-400 mb-4">Estado Actual</h3>
                     <div className={`p-4 rounded-md text-center ${mercado.abierto ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                        <p className="font-bold text-lg">
-                            El mercado está: {mercado.abierto ? 'ABIERTO' : 'CERRADO'}
-                        </p>
+                        <p className="font-bold text-lg">El mercado está: {mercado.abierto ? 'ABIERTO' : 'CERRADO'}</p>
+                        <p className="text-xs capitalize">Modo: {mercado.estado.replace('_', ' ')}</p>
                     </div>
                     <div className="mt-4 text-sm text-gray-400">
                         <p><strong>Período programado:</strong></p>
@@ -115,37 +100,19 @@ function AdminMercadoPage() {
                         </button>
                     </div>
                 </div>
-
-                {/* Panel para Programar Fechas */}
                 <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
                     <h3 className="text-lg font-medium text-cyan-400 mb-4">Programar Nuevo Período</h3>
                     <form onSubmit={handleProgramarMercado} className="space-y-4">
                         <div>
                             <label htmlFor="inicio" className={labelClass}>Fecha de Inicio:</label>
-                            <input
-                                id="inicio"
-                                type="datetime-local"
-                                value={formFechas.inicio}
-                                onChange={e => setFormFechas({ ...formFechas, inicio: e.target.value })}
-                                required
-                                className={inputClass}
-                            />
+                            <input id="inicio" type="datetime-local" value={formFechas.inicio} onChange={e => setFormFechas({ ...formFechas, inicio: e.target.value })} required className={inputClass} />
                         </div>
                         <div>
                             <label htmlFor="fin" className={labelClass}>Fecha de Fin:</label>
-                            <input
-                                id="fin"
-                                type="datetime-local"
-                                value={formFechas.fin}
-                                onChange={e => setFormFechas({ ...formFechas, fin: e.target.value })}
-                                required
-                                className={inputClass}
-                            />
+                            <input id="fin" type="datetime-local" value={formFechas.fin} onChange={e => setFormFechas({ ...formFechas, fin: e.target.value })} required className={inputClass} />
                         </div>
                         <div className="text-right pt-2">
-                            <button type="submit" className={buttonClass}>
-                                Guardar Fechas
-                            </button>
+                            <button type="submit" className={buttonClass}>Guardar Fechas</button>
                         </div>
                     </form>
                 </div>
