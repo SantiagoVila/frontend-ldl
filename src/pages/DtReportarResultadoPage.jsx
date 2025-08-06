@@ -71,18 +71,19 @@ function DtReportarResultadoPage() {
             return;
         }
 
-        const jugadoresValidos = estadisticas
-            .filter(s => s.goles > 0 || s.asistencias > 0)
-            .map(s => ({
-                id: s.jugador_id,
-                goles: s.goles,
-                asistencias: s.asistencias
-            }));
-
         const formData = new FormData();
         formData.append('goles_local', golesLocal);
         formData.append('goles_visitante', golesVisitante);
-        formData.append('jugadores', JSON.stringify(jugadoresValidos));
+
+        // --- CAMBIO PARA DEPURACIÓN ---
+        // Estas líneas nos mostrarán en la consola el contenido exacto de la variable.
+        const estadisticasFiltradas = estadisticas.filter(s => s.goles > 0 || s.asistencias > 0);
+        console.log("1. 'estadisticas' ANTES de filtrar:", estadisticas);
+        console.log("2. 'estadisticas' DESPUÉS de filtrar:", estadisticasFiltradas);
+        // --- FIN DEL CAMBIO ---
+
+        // Se utiliza la variable creada para asegurar que se envía lo mismo que se muestra en consola.
+        formData.append('jugadores', JSON.stringify(estadisticasFiltradas));
         formData.append('imagen_resultado', file);
 
         try {
