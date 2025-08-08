@@ -9,7 +9,6 @@ function AdminPartidosPage() {
     const [error, setError] = useState('');
     const { token } = useAuth();
 
-    // ✅ FUNCIÓN ACTUALIZADA: Llama al nuevo endpoint para obtener partidos que necesitan atención
     const fetchPartidosParaRevision = async () => {
         if (!token) return;
         setLoading(true);
@@ -31,7 +30,6 @@ function AdminPartidosPage() {
         fetchPartidosParaRevision();
     }, [token]);
 
-    // ✅ FUNCIÓN ACTUALIZADA: Llama al nuevo endpoint para resolver la disputa
     const handleResolver = async (partidoId, reporteGanadorId) => {
         try {
             await api.post(`/partidos/admin/resolver/${partidoId}`, 
@@ -39,7 +37,6 @@ function AdminPartidosPage() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             toast.success('¡Partido resuelto con éxito!');
-            // Recargamos la lista para que el partido resuelto desaparezca
             fetchPartidosParaRevision();
         } catch (err) {
             toast.error(err.response?.data?.error || 'Error al resolver la disputa.');
@@ -77,7 +74,10 @@ function AdminPartidosPage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-xl font-bold text-white">{partido.nombre_local} vs {partido.nombre_visitante}</h3>
-                                    <p className="text-sm text-gray-400">Fecha: {new Date(partido.fecha).toLocaleDateDateString()}</p>
+                                    {/* ✅ CORRECCIÓN: Se añade una comprobación para la fecha */}
+                                    <p className="text-sm text-gray-400">
+                                        Fecha: {partido.fecha ? new Date(partido.fecha).toLocaleDateString() : 'No definida'}
+                                    </p>
                                 </div>
                                 <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusClass(partido.estado_reporte)}`}>
                                     {partido.estado_reporte.replace('_', ' ')}
