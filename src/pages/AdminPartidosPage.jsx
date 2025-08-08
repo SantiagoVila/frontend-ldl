@@ -30,10 +30,11 @@ function AdminPartidosPage() {
         fetchPartidosParaRevision();
     }, [token]);
 
-    const handleResolver = async (partidoId, reporteGanadorId) => {
+    const handleResolver = async (partidoId, reporteId) => {
         try {
-            await api.post(`/partidos/admin/resolver/${partidoId}`, 
-                { reporte_ganador_id: reporteGanadorId },
+            await api.post(
+                `/partidos/admin/resolver/${partidoId}`,
+                { reporte_ganador_id: reporteId }, // ✅ CORRECTO: snake_case para el backend
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             toast.success('¡Partido resuelto con éxito!');
@@ -57,7 +58,9 @@ function AdminPartidosPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
-                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>Confirmar Resultados</h2>
+                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>
+                    Confirmar Resultados
+                </h2>
                 <p className="mt-1 text-sm text-gray-400">
                     Confirma el resultado correcto para los partidos con reportes conflictivos o pendientes.
                 </p>
@@ -70,28 +73,44 @@ function AdminPartidosPage() {
             ) : (
                 <div className="space-y-6">
                     {partidos.map(partido => (
-                        <div key={partido.id} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6">
+                        <div
+                            key={partido.id}
+                            className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 shadow-lg rounded-lg p-6"
+                        >
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">{partido.nombre_local} vs {partido.nombre_visitante}</h3>
-                                    {/* ✅ CORRECCIÓN: Se añade una comprobación para la fecha */}
+                                    <h3 className="text-xl font-bold text-white">
+                                        {partido.nombre_local} vs {partido.nombre_visitante}
+                                    </h3>
                                     <p className="text-sm text-gray-400">
                                         Fecha: {partido.fecha ? new Date(partido.fecha).toLocaleDateString() : 'No definida'}
                                     </p>
                                 </div>
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusClass(partido.estado_reporte)}`}>
+                                <span
+                                    className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusClass(partido.estado_reporte)}`}
+                                >
                                     {partido.estado_reporte.replace('_', ' ')}
                                 </span>
                             </div>
 
                             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {partido.reportes.map(reporte => (
-                                    <div key={reporte.id} className="bg-gray-900/50 p-4 rounded-md border border-gray-700 flex flex-col">
-                                        <p className="text-sm text-gray-400">Reporte del Equipo ID: {reporte.equipo_reportador_id}</p>
+                                    <div
+                                        key={reporte.id}
+                                        className="bg-gray-900/50 p-4 rounded-md border border-gray-700 flex flex-col"
+                                    >
+                                        <p className="text-sm text-gray-400">
+                                            Reporte del Equipo ID: {reporte.equipo_reportador_id}
+                                        </p>
                                         <p className="text-2xl font-bold text-white my-2">
                                             {reporte.goles_local_reportados} - {reporte.goles_visitante_reportados}
                                         </p>
-                                        <a href={`${import.meta.env.VITE_API_URL}${reporte.imagen_prueba_url}`} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline text-sm mb-4">
+                                        <a
+                                            href={`${import.meta.env.VITE_API_URL}${reporte.imagen_prueba_url}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-cyan-400 hover:text-cyan-300 underline text-sm mb-4"
+                                        >
                                             Ver Prueba
                                         </a>
                                         <button
