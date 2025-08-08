@@ -23,9 +23,14 @@ function DtReportarResultadoPage() {
             if (!token || !usuario?.equipo_id) return;
             setLoading(true);
             try {
+                // ✅ CORRECCIÓN: Se añade el token de autorización a ambas llamadas
                 const [partidoRes, equipoRes] = await Promise.all([
-                    api.get(`/partidos/dt/partido-para-reportar/${tipo}/${id}`),
-                    api.get(`/equipos/${usuario.equipo_id}/perfil-detallado`)
+                    api.get(`/partidos/dt/partido-para-reportar/${tipo}/${id}`, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    }),
+                    api.get(`/equipos/${usuario.equipo_id}/perfil-detallado`, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    })
                 ]);
                 setPartido(partidoRes.data);
                 const statsIniciales = equipoRes.data.plantilla.map(jugador => ({
