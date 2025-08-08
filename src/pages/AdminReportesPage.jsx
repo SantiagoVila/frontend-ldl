@@ -36,7 +36,7 @@ function AdminReportesPage() {
     const handleMarcarAtendido = async (reporteId) => {
         try {
             // CORRECTO: 'await' está dentro de una función 'async'
-            await api.put(`/admin/reportes/${reporteId}/atender`, {}, {
+            await api.put(`/partidos/admin/resolver/${reporteId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Reporte marcado como atendido.');
